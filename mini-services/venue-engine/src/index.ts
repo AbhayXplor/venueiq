@@ -253,6 +253,15 @@ async function boot(): Promise<void> {
   })
   setInterval(() => appendHealth({ mode: llmStats().mode, clients: io.engine.clientsCount }), 30000)
 
+  // Keep an eye on a reasoning service that is not answering. On free hosting
+  // it can be asleep, still waking, or briefly mid-redeploy — all of which read
+  // as "unavailable" for a moment and then stop being true. Without this the
+  // engine stayed on the fallback chain until someone opened a console or a
+  // cycle happened to retry, which looks like the agent layer is switched off.
+  setInterval(() => {
+    if (config.agent.mode === 'langgraph' && !brainAvailable()) void wakeBrain('background retry')
+  }, 30_000)
+
   if (config.agent.mode === 'langgraph') {
     const health = await brainHealth()
     if (health) {
