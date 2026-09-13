@@ -361,8 +361,12 @@ async function fetchJson(url, tries = 60) {
    --------------------------------------------------------------------------- */
 
 const ROUTES = [
-  { path: "/operator", ready: ".vq-panel" },
-  { path: "/visitor", ready: '[role="tablist"]' },
+  // The console and the guest view only render once an engine snapshot lands,
+  // so each names the copy it shows while it is still waiting. Without that,
+  // running this check with no engine up reports eight phantom layout bugs —
+  // which is exactly the state a cold-hosted deployment starts in.
+  { path: "/operator", ready: ".vq-panel", waiting: /waiting for the engine/i },
+  { path: "/visitor", ready: '[role="tablist"]', waiting: /syncing with the venue network/i },
   { path: "/live", ready: ".vq-panel" },
   { path: "/how", ready: ".vq-land-doc" },
   // Either landing layout satisfies this: the film variant replaced the classic
@@ -403,6 +407,7 @@ async function main() {
   }
 
   let failures = 0
+  let waitingCount = 0
   const rows = []
 
   try {
@@ -500,7 +505,8 @@ async function main() {
         if (!m) throw new Error(`${route.path} measurement returned nothing`)
 
         const problems = []
-        if (!found) problems.push(`never rendered ${route.ready} — body reads: "${m.bodyText}"`)
+        const waiting = !found && route.waiting?.test(m.bodyText ?? "")
+        if (!found && !waiting) problems.push(`never rendered ${route.ready} — body reads: "${m.bodyText}"`)
         if (m.horizontalOverflow > 1) problems.push(`page scrolls sideways by ${m.horizontalOverflow}px`)
         if (m.overlaps.length) problems.push(`${m.overlaps.length} panel overlap(s)`)
         if (m.cardOverlaps.length) problems.push(`${m.cardOverlaps.length} card overlap(s)`)
@@ -523,10 +529,12 @@ async function main() {
         }
 
         if (problems.length) failures++
+        if (waiting && !problems.length) waitingCount++
         rows.push({ route: route.path, width, problems, m })
 
-        const status = problems.length ? "FAIL" : "ok  "
+        const status = problems.length ? "FAIL" : waiting ? "wait" : "ok  "
         console.log(`${status} ${route.path.padEnd(10)} ${String(width).padStart(4)}px  panels=${m.panels} cards=${m.cards} docH=${m.docHeight}`)
+        if (waiting && !problems.length) console.log("       · no engine connected — measured the waiting state instead")
         if (problems.length) {
           for (const p of problems) console.log(`       · ${p}`)
           if (VERBOSE) {
@@ -549,10 +557,11 @@ async function main() {
     await cleanup()
   }
 
+  const waitingNote = waitingCount ? `, ${waitingCount} measured in their waiting-for-the-engine state` : ""
   console.log(
     failures === 0
-      ? `\nPASS — ${rows.length}/${rows.length} route×width combinations clean`
-      : `\nFAIL — ${failures}/${rows.length} combinations have layout problems`,
+      ? `\nPASS — ${rows.length}/${rows.length} route×width combinations clean${waitingNote}`
+      : `\nFAIL — ${failures}/${rows.length} combinations have layout problems${waitingNote}`,
   )
   process.exit(failures === 0 ? 0 : 1)
 }

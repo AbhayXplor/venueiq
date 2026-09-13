@@ -17,6 +17,21 @@ function bool(name: string, def: boolean): boolean {
   return ['1', 'true', 'yes', 'on'].includes(v.trim().toLowerCase())
 }
 
+/**
+ * Normalise a service address that may have been given as a bare host.
+ *
+ * Platforms hand out hostnames without a scheme (`my-service.onrender.com`,
+ * and a Render blueprint injects exactly that), and `fetch('my-service…')`
+ * fails on every call with an unhelpful parse error. Bare hosts default to
+ * https, except the addresses that only ever mean a local process.
+ */
+function baseUrl(raw: string): string {
+  const v = raw.replace(/\/+$/, '')
+  if (/^https?:\/\//i.test(v)) return v
+  const local = /^(localhost|127\.0\.0\.1|0\.0\.0\.0|\[::1\]|host\.docker\.internal)([:/]|$)/i.test(v)
+  return `${local ? 'http' : 'https'}://${v}`
+}
+
 function list(name: string, def: string[]): string[] {
   const v = process.env[name]
   if (!v || !v.trim()) return def
@@ -71,7 +86,7 @@ export const config = {
    */
   agent: {
     mode: (str('AGENT_MODE', 'langgraph') === 'ts' ? 'ts' : 'langgraph') as 'langgraph' | 'ts',
-    brainUrl: str('BRAIN_URL', 'http://127.0.0.1:3004'),
+    brainUrl: baseUrl(str('BRAIN_URL', 'http://127.0.0.1:3004')),
     /** Generous, because a slow cycle only stretches the cadence — the agent
      *  loop already refuses to run two cycles at once. */
     brainTimeoutMs: num('BRAIN_TIMEOUT_MS', 30000),

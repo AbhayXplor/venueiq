@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { EngineWarmer } from "@/components/EngineWarmer";
 
 /** VenueIQ mark — three graduated bars, tilted. Reads as a crowd-density ramp. */
 const MARK = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cg transform='rotate(-30 12 12)'%3E%3Crect x='4.2' y='11.6' width='3.5' height='8.4' rx='1.75'/%3E%3Crect x='10.25' y='7.6' width='3.5' height='12.4' rx='1.75'/%3E%3Crect x='16.3' y='3.6' width='3.5' height='16.4' rx='1.75'/%3E%3C/g%3E%3C/svg%3E";
@@ -27,7 +28,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           rel="stylesheet"
         />
       </head>
-      <body>{children}</body>
+      <body>
+        {children}
+        <EngineWarmer />
+      </body>
     </html>
   );
 }

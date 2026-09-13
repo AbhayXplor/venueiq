@@ -7,12 +7,57 @@ import { createServer } from 'http'
 import { config } from './config'
 import { advanceMinute, buildSnapshot, getState, patchBrain, resetState } from './state/venue'
 import { runAgentCycle, emitTrace, onTrace, recentTrace, resetAgents } from './agents/coordinator'
-import { brainHealth, brainStatus } from './agents/brain-client'
+import { brainHealth, brainStatus, brainWarm } from './agents/brain-client'
 import { probeEndpoints, qodBoost, resetNac } from './nac'
 import { probeProviders, clearExternalLlm, llmStats, noteExternalLlm } from './llm/provider'
 import { appendHealth } from './recorder'
 
-const http = createServer()
+/** When this process came up — reported by `/health`, so a restart is visible. */
+const startedAt = Date.now()
+
+/** Requests served on `/health`. Counted so a keep-alive ping is proven, not assumed. */
+let healthHits = 0
+
+/**
+ * A host has to be able to ask this process whether it is alive.
+ *
+ * This server previously had no request handler at all. A platform health
+ * check — or the keep-alive ping that stops a free instance spinning down
+ * mid-demo — therefore got no reply and read as "dead" while the engine was
+ * streaming perfectly. socket.io attaches its own listener and hands every
+ * non-socket request to this one, so both share the port and the URL.
+ */
+const http = createServer((req, res) => {
+  const path = (req.url ?? '/').split('?')[0]
+
+  if (path === '/health') {
+    healthHits++
+    const s = getState()
+    res.writeHead(200, {
+      'Content-Type': 'application/json',
+      'Cache-Control': 'no-store',
+      'Access-Control-Allow-Origin': '*',
+    })
+    res.end(
+      JSON.stringify({
+        ok: true,
+        service: 'venueiq-engine',
+        uptimeSeconds: Math.round((Date.now() - startedAt) / 1000),
+        healthHits,
+        agentMode: config.agent.mode,
+        brain: brainStatus(),
+        llm: llmStats().mode,
+        scenario: { running: s.running, minuteOfDay: s.minuteOfDay, speed: s.speed },
+        clients: io.engine.clientsCount,
+      }),
+    )
+    return
+  }
+
+  res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8' })
+  res.end('VenueIQ engine — live crowd-risk simulation. Health: /health\n')
+})
+
 const io = new Server(http, {
   cors: { origin: '*', methods: ['GET', 'POST'] },
   maxHttpBufferSize: 1e6,
@@ -162,6 +207,15 @@ async function reportEndpointProbe(): Promise<void> {
 onTrace((e) => io.emit('trace', e))
 
 async function boot(): Promise<void> {
+  // Bind the port before anything slow happens. The endpoint probe below makes
+  // seven live gateway calls and can take tens of seconds on a slow network; on
+  // a host that health-checks this port, listening only afterwards would make a
+  // perfectly healthy boot look like a failed deploy.
+  http.listen(config.port, () => {
+    console.log(`VenueIQ engine listening on :${config.port} (agent: ${config.agent.mode})`)
+  })
+  setInterval(() => appendHealth({ mode: llmStats().mode, clients: io.engine.clientsCount }), 30000)
+
   if (config.agent.mode === 'langgraph') {
     const health = await brainHealth()
     if (health) {
@@ -187,6 +241,22 @@ async function boot(): Promise<void> {
         detail: `${brainStatus().url} (${brainStatus().lastError}) · start it with: cd mini-services/agent-brain && python -m app.main`,
       })
       await probeProviders()
+
+      // A hosted free instance is spun down when idle and can take a minute to
+      // answer again — far longer than the 2.5s health check above, which is
+      // deliberately short so a dead brain costs one cycle rather than blocking
+      // it. This is the patient second attempt, fired in the background and
+      // reported on screen, so a waking brain is a visible recovery instead of
+      // a demo that quietly runs the fallback chain all evening.
+      void brainWarm().then((woke) => {
+        if (!woke) return
+        patchBrain({ mode: 'langgraph', available: true, llmBudget: woke.budget.llmBudget })
+        noteExternalLlm(woke.llm.mode, 0)
+        emitTrace('ENGINE', 'system', `Agent brain answered after ${Math.round(woke.tookMs / 1000)}s — back on the LangGraph graph`, {
+          source: 'api',
+          detail: `reasoning via ${woke.llm.mode} · hosted budget ${woke.budget.llmBudget} calls/run · network ${woke.nac.mode}`,
+        })
+      })
     }
   } else {
     await probeProviders()
@@ -208,10 +278,6 @@ async function boot(): Promise<void> {
   })
 
   await reportEndpointProbe()
-  http.listen(config.port, () => {
-    console.log(`VenueIQ engine listening on :${config.port} (agent: ${config.agent.mode}, LLM: ${mode})`)
-  })
-  setInterval(() => appendHealth({ mode: llmStats().mode, clients: io.engine.clientsCount }), 30000)
 }
 
 void boot()

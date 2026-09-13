@@ -38,6 +38,7 @@ Start order matters — the engine health-checks the brain at boot.
 │   │   └── globals.css           # console surfaces: token layer + shared chrome
 │   ├── components/landing/       # hero, header, live preview
 │   ├── components/operator/      # venue map, signal board, Guardian, Oracle, trace
+│   ├── components/EngineWarmer.tsx  # one /health ping on page load, to wake a sleeping host
 │   └── lib/                      # shared socket client + wire types
 ├── public/
 │   └── hero.mp4                  # hero film — a local asset, so it wins over the CDN fallback
@@ -52,6 +53,7 @@ Start order matters — the engine health-checks the brain at boot.
 │   └── agent-brain/              # Python service
 │       ├── app/                  # graph, router policy, forecaster, NaC client
 │       └── tests/                # router policy tests, offline backtest + fixture
+├── render.yaml                   # the two live services as free Render instances
 └── scripts/                      # repo-level diagnostics and verification
 ```
 
@@ -130,50 +132,49 @@ the visitor, and the Transit Hub absorbs the egress waves after the last show.
 
 ## Deploy
 
-There are three processes and they need three different homes. Vercel can run the Next.js
-app but **not** the engine: the engine holds a live socket and a tick loop, and Vercel has no
-long-lived process to put those in.
+Three processes, two homes. Vercel runs the Next.js app but **not** the engine: the engine holds
+a live socket and a tick loop, and Vercel has no long-lived process to put those in.
 
 | Piece | Where | Why |
 |---|---|---|
 | `src/` (Next.js) | **Vercel** | static + server rendering — what Vercel is for |
-| `mini-services/venue-engine` | **Railway / Render / Fly** | needs an always-on process for socket.io |
-| `mini-services/agent-brain` | **Railway / Render / Fly** | a long-lived HTTP service |
+| `mini-services/venue-engine` | **Render** — declared in `render.yaml` | needs a long-lived process for socket.io |
+| `mini-services/agent-brain` | **Render** — declared in `render.yaml` | a long-lived HTTP service |
 
-Nothing is hardcoded to a local address, and every service takes its port from `$PORT` when
-the platform supplies one — so there is no port to configure. The code prefers `$PORT` and
-falls back to `3003` / `3004` (the ports its `Dockerfile` exposes), so it comes up correctly
-whether or not the platform injects one.
+Nothing is hardcoded to a local address. Every service takes its port from `$PORT` when the
+platform supplies one and falls back to `3003` / `3004` (the ports its `Dockerfile` exposes),
+so there is no port to configure. Both bind `0.0.0.0` and both answer `GET /health`.
 
-One build setting does matter: **the build context must be the service directory**, not the
-repo root. The `Dockerfile` `COPY` paths are relative to it, so a repo-root build fails with
-`package.json not found`. Render and Railway call this the Root Directory; Northflank calls it
-the build context. If a platform will only build from the repo root, prefix the `COPY` paths
-in that Dockerfile with `mini-services/<service>/`.
+### 1 — the two live services on Render (free, no credit card)
 
-### 1 — the engine and the brain
+`render.yaml` at the repo root provisions both. On Render: **New → Blueprint → pick this repo →
+Apply**. Render prompts for the two secrets (`OLLAMA_API_KEY`, `NAC_API_KEY`) — nothing secret
+is stored in the file — and wires `BRAIN_URL` to the brain's own hostname for you.
 
-Create a service for each and point it at the right subdirectory:
+Build settings come from the Blueprint. Creating a service by hand instead? Two values matter:
+the **Dockerfile path** is `mini-services/<service>/Dockerfile`, and the **build context** must
+be that same service directory (`dockerContext` in `render.yaml`). The `COPY` paths are
+relative to it, so a repo-root context fails with `package.json not found`.
 
-| Platform setting | Engine | Brain |
-|---|---|---|
-| Root directory | `mini-services/venue-engine` | `mini-services/agent-brain` |
-| Build | Dockerfile (detected) | Dockerfile (detected) |
-| Port | `$PORT`, automatic | `$PORT`, automatic |
+**What the free tier actually means here, measured rather than assumed:**
 
-Set these on the **engine** (full list with explanations in
-`mini-services/venue-engine/.env.example`):
+| Limit | Consequence |
+|---|---|
+| Spins down after 15 min without traffic | the first visit waits **~1 min** for it to come back |
+| ~1 min spin-up | the engine triggers a second one for the brain behind it |
+| 750 instance hours per workspace per month | ~730 h is one service awake non-stop, so keep both free and let them sleep |
+| Ephemeral filesystem | the recorder's `data/session-log.jsonl` is per-boot; nothing depends on it |
 
-```
-OLLAMA_BASE_URL  OLLAMA_API_KEY  OLLAMA_MODEL
-NAC_API_KEY  NAC_BASE_URL  NAC_RAPIDAPI_HOST
-AGENT_MODE=langgraph
-BRAIN_URL=https://<your-brain-host>          # required — the engine calls the brain
-NAC_GEOFENCE_SINK=https://<public webhook>   # only needed for a real geofence crossing
-```
+The cold start is handled in code rather than by hoping. `EngineWarmer` (mounted in the root
+layout) fires one `/health` request as soon as *any* page loads, so the engine starts waking
+while a visitor is still reading the landing page; the engine's boot then calls the brain with
+a 90 s budget and writes the recovery to the trace feed with the number of seconds it took. If
+the brain is still asleep when a cycle runs, that cycle uses the TypeScript chain, says so on
+screen, and switches back on its own — no restart, no redeploy.
 
-Set `OLLAMA_API_KEY` (or `GEMINI_API_KEY`) on the **brain**. It binds `0.0.0.0` by default so
-it is reachable from outside its container; set `BRAIN_HOST` to pin it down again.
+If a judge might click your link cold and a one-minute wait is unacceptable, put the **engine**
+on any always-on tier (Render Starter, Railway, Fly) and leave the brain free: the engine is the
+one that has to hold the socket.
 
 ### 2 — the app on Vercel
 
@@ -193,9 +194,8 @@ Open `https://<app>/operator`. The header reports the engine's mode and the LLM 
 actually answering. If it says disconnected, either `NEXT_PUBLIC_ENGINE_URL` is wrong or the
 engine is asleep.
 
-> **Free-tier warning:** Render's free tier suspends idle services, and a suspended engine is
-> a dead demo link. Keep the engine on an always-on tier for judging, or expect a ~30s cold
-> start on the first request.
+`https://<engine-host>/health` returns the same state as JSON — including `uptimeSeconds`,
+`healthHits` and the agent mode — which is how you tell "asleep" apart from "misconfigured".
 
 ## Checks
 
@@ -213,7 +213,7 @@ Everything here is runnable from the repo root and costs nothing unless noted.
 | `python -m pytest mini-services/agent-brain/tests -q` | the router's decision policy | 0 |
 | `python mini-services/agent-brain/tests/backtest.py` | the forecaster, scored offline | 0 |
 | `node scripts/capture-trajectory.mjs` | a full evening of zone data, offline, for forecast tuning | 0 |
-| `node scripts/layout-check.mjs` | geometry, palette and text contrast, 5 routes × 4 widths | 0 |
+| `node scripts/layout-check.mjs` | geometry, palette and text contrast, 5 routes × 4 widths — and, with no engine up, the waiting states a cold-hosted deployment starts in | 0 |
 | `node scripts/shots.mjs --full` | review shots → `screenshots/` (local only) | 0 |
 
 Two of these are worth more than the rest.

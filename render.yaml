@@ -1,0 +1,72 @@
+# Render Blueprint — the no-card hosting path for the two live services.
+#
+# Vercel runs the Next.js app (see the Deploy section of the README); these two
+# carry the engine and the agent brain. Both are Free instances: no credit card
+# required, and Render spins either one down after 15 minutes without traffic.
+# The app handles that — `EngineWarmer` pings the engine as soon as any page
+# loads, the engine wakes the brain behind it, and the console says "waking the
+# engine" instead of looking broken while it happens.
+#
+# Apply it: Render dashboard → New → Blueprint → pick this repo → Apply.
+# The keys marked `sync: false` are secrets: Render prompts for them during
+# setup and stores them, so they are never committed here.
+#
+# Two things to know:
+#   • Each service needs its build context set to its own directory, because the
+#     Dockerfiles' COPY paths are relative to it. `dockerContext` does that.
+#   • Free instances cannot receive private network traffic, so the engine calls
+#     the brain over its public hostname (RENDER_EXTERNAL_HOSTNAME below). A bare
+#     host with no scheme is fine — src/config.ts adds https for anything that is
+#     not localhost.
+services:
+  - type: web
+    name: venueiq-brain
+    runtime: docker
+    plan: free
+    dockerfilePath: ./mini-services/agent-brain/Dockerfile
+    dockerContext: ./mini-services/agent-brain
+    healthCheckPath: /health
+    envVars:
+      - key: OLLAMA_BASE_URL
+        value: https://ollama.com/v1
+      - key: OLLAMA_MODEL
+        value: gpt-oss:20b
+      - key: NAC_BASE_URL
+        value: https://network-as-code.p-eu.rapidapi.com
+      - key: NAC_RAPIDAPI_HOST
+        value: network-as-code.nokia.rapidapi.com
+      # Secrets — prompted for on first apply.
+      - key: OLLAMA_API_KEY
+        sync: false
+      - key: NAC_API_KEY
+        sync: false
+
+  - type: web
+    name: venueiq-engine
+    runtime: docker
+    plan: free
+    dockerfilePath: ./mini-services/venue-engine/Dockerfile
+    dockerContext: ./mini-services/venue-engine
+    healthCheckPath: /health
+    envVars:
+      - key: AGENT_MODE
+        value: langgraph
+      # Wired to whichever hostname Render gives the brain, so nothing has to be
+      # pasted between two dashboards.
+      - key: BRAIN_URL
+        fromService:
+          type: web
+          name: venueiq-brain
+          envVarKey: RENDER_EXTERNAL_HOSTNAME
+      - key: OLLAMA_BASE_URL
+        value: https://ollama.com/v1
+      - key: OLLAMA_MODEL
+        value: gpt-oss:20b
+      - key: NAC_BASE_URL
+        value: https://network-as-code.p-eu.rapidapi.com
+      - key: NAC_RAPIDAPI_HOST
+        value: network-as-code.nokia.rapidapi.com
+      - key: OLLAMA_API_KEY
+        sync: false
+      - key: NAC_API_KEY
+        sync: false

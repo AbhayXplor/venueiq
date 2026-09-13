@@ -48,10 +48,10 @@ export function brainShouldTry(): boolean {
   return Date.now() - lastCheckAt > RETRY_AFTER_MS
 }
 
-export async function brainHealth(): Promise<BrainHealth | null> {
+async function brainCheck(timeoutMs: number): Promise<BrainHealth | null> {
   lastCheckAt = Date.now()
   try {
-    const res = await fetchWithTimeout('/health', { method: 'GET' }, Math.min(2500, config.agent.brainTimeoutMs))
+    const res = await fetchWithTimeout('/health', { method: 'GET' }, timeoutMs)
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
     const data = (await res.json()) as BrainHealth
     available = true
@@ -63,6 +63,30 @@ export async function brainHealth(): Promise<BrainHealth | null> {
     lastError = String(e?.message || e).slice(0, 120)
     return null
   }
+}
+
+/**
+ * The boot-time health check: quick on purpose. If the brain is not answering
+ * within a couple of seconds the engine starts anyway and degrades, because a
+ * slow brain must never hold up the simulation.
+ */
+export async function brainHealth(): Promise<BrainHealth | null> {
+  return brainCheck(Math.min(2500, config.agent.brainTimeoutMs))
+}
+
+/**
+ * Wake a brain that is not answering yet.
+ *
+ * A free-tier host spins an idle service down, and the next request waits for
+ * it to come back — around a minute, which the 2.5s boot check will always miss.
+ * This is the patient second attempt: same endpoint, a timeout measured in
+ * minutes, and the elapsed time returned so the recovery can be reported with a
+ * number rather than a shrug. Best-effort — it never throws.
+ */
+export async function brainWarm(timeoutMs = 90_000): Promise<(BrainHealth & { tookMs: number }) | null> {
+  const t0 = Date.now()
+  const data = await brainCheck(timeoutMs)
+  return data ? { ...data, tookMs: Date.now() - t0 } : null
 }
 
 export async function brainReset(runId: string): Promise<void> {

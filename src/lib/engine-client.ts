@@ -93,6 +93,27 @@ function attach(s: Socket, path: "gateway" | "direct") {
   )
 }
 
+/**
+ * Wake the engine before anyone needs it.
+ *
+ * A free-tier host spins an idle service down, and the next request then waits
+ * up to a minute for it to answer. Firing one harmless request as soon as any
+ * page loads starts that wake-up while the reader is still on the landing page,
+ * so the console usually has a live engine by the time they reach it. Waking
+ * the engine also wakes the brain behind it, which is the slower of the two.
+ *
+ * Best-effort by design: it must never block a render or throw.
+ */
+let warmRequested = false
+
+export function warmEngine(): void {
+  if (warmRequested || typeof window === "undefined") return
+  warmRequested = true
+  // `no-cors` because the engine is a different origin: the reply is opaque and
+  // unreadable, which is fine — the request reaching the engine is the point.
+  void fetch(`${directEngineUrl()}/health`, { mode: "no-cors", cache: "no-store" }).catch(() => {});
+}
+
 export function connectEngine(): () => void {
   // The gateway trick is a local-preview affordance only: it routes a
   // same-origin socket upgrade through Next's dev server via a query param.

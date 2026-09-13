@@ -23,6 +23,12 @@ import { TracePanel } from "@/components/operator/TracePanel";
 // 8× and 16× are for fast-forwarding a rehearsal; the demo narrative runs at 1–4×.
 const SPEEDS = [0.5, 1, 2, 4, 8, 16]
 
+//
+// Whether this build talks to a hosted engine. Nobody running locally needs to
+// hear about cold starts, and nobody visiting a deployment needs to be told to
+// start a Bun process — so the waiting state says which one it is.
+const HOSTED = Boolean(process.env.NEXT_PUBLIC_ENGINE_URL)
+
 function TopBar() {
   const snap = useEngineStore((s) => s.snapshot)
   if (!snap) return null
@@ -183,14 +189,22 @@ export default function OperatorPage() {
                 Waiting for the <span className="vq-serif text-[17px] text-dim">engine</span>
               </p>
               <p className="mt-2 text-[12px] leading-relaxed text-mute">
-                The console streams venue state, Nokia NaC signals and agent decisions over one socket.
-                Start the brain and the engine, then reload.
+                {HOSTED
+                  ? "The console streams venue state, Nokia NaC signals and agent decisions over one socket. On free hosting the engine spins down while idle, so the first visit can take up to a minute — this page keeps trying by itself."
+                  : "The console streams venue state, Nokia NaC signals and agent decisions over one socket. Start the brain and the engine, then reload."}
               </p>
-              <code className="vq-well mt-4 block px-4 py-3 text-left font-mono text-[11px] leading-relaxed text-dim">
-                cd mini-services/agent-brain && uvicorn app.main:app --port 3004
-                <br />
-                cd mini-services/venue-engine && bun --hot src/index.ts
-              </code>
+              {HOSTED ? (
+                <p className="mt-5 inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.18em] text-dim">
+                  <span className="h-1.5 w-1.5 rounded-full bg-live vq-pulse" />
+                  waking the engine
+                </p>
+              ) : (
+                <code className="vq-well mt-4 block px-4 py-3 text-left font-mono text-[11px] leading-relaxed text-dim">
+                  cd mini-services/agent-brain && uvicorn app.main:app --port 3004
+                  <br />
+                  cd mini-services/venue-engine && bun --hot src/index.ts
+                </code>
+              )}
             </div>
           </div>
         )}
