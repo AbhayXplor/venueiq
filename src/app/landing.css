@@ -1310,16 +1310,16 @@ html.vq-land-menu-open {
 .vq-land-below {
   position: relative;
   z-index: 1;
-  /* transparent at the very top blends over the fixed film, then solid black.
-     The glows carry the Dubai-evening palette of the hero film: warm sodium
-     orange with one cool counterpoint, so the story never reads as flat black. */
+  /* transparent at the very top blends over the fixed film, then the surface
+     below is never black: a dark sodium-brown base like the Dubai film's night
+     sky, with the orange glows riding on it. */
   background:
-    linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.92) 160px, #000 320px),
-    radial-gradient(1000px 480px at 85% 1%, rgba(255, 138, 52, 0.2), transparent 62%),
-    radial-gradient(860px 520px at 4% 32%, rgba(255, 116, 44, 0.12), transparent 60%),
-    radial-gradient(1200px 620px at 55% 102%, rgba(255, 158, 72, 0.1), transparent 65%),
-    radial-gradient(720px 420px at 30% 12%, rgba(90, 120, 200, 0.08), transparent 64%),
-    #000;
+    linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, rgba(8, 5, 2, 0.94) 150px, rgba(8, 5, 2, 0) 340px),
+    radial-gradient(1150px 600px at 82% 0%, rgba(255, 132, 40, 0.32), transparent 64%),
+    radial-gradient(950px 640px at 0% 34%, rgba(255, 110, 40, 0.19), transparent 60%),
+    radial-gradient(1300px 720px at 58% 104%, rgba(255, 150, 64, 0.16), transparent 66%),
+    radial-gradient(780px 470px at 28% 12%, rgba(96, 124, 208, 0.1), transparent 64%),
+    linear-gradient(168deg, #1a1109 0%, #140c07 30%, #0b0704 62%, #070402 100%);
   font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   -webkit-font-smoothing: antialiased;
   color: #fff;
