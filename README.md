@@ -39,6 +39,7 @@ Start order matters — the engine health-checks the brain at boot.
 │   ├── components/landing/       # hero, header, live preview
 │   ├── components/operator/      # venue map, signal board, Guardian, Oracle, trace
 │   ├── components/EngineWarmer.tsx  # one /health ping on page load, to wake a sleeping host
+│   ├── components/ConsoleWakeNote.tsx  # says the console may be waking — only while it really is
 │   └── lib/                      # shared socket client + wire types
 ├── public/
 │   └── hero.mp4                  # hero film — a local asset, so it wins over the CDN fallback
@@ -170,7 +171,9 @@ layout) fires one `/health` request as soon as *any* page loads, so the engine s
 while a visitor is still reading the landing page; the engine's boot then calls the brain with
 a 90 s budget and writes the recovery to the trace feed with the number of seconds it took. If
 the brain is still asleep when a cycle runs, that cycle uses the TypeScript chain, says so on
-screen, and switches back on its own — no restart, no redeploy.
+screen, and switches back on its own — no restart, no redeploy. The landing page and `/live`
+also say so in advance, but only while the engine is genuinely not answering (`ConsoleWakeNote`
+asks `/health` first), so a warm demo never carries a stale warning.
 
 If a judge might click your link cold and a one-minute wait is unacceptable, put the **engine**
 on any always-on tier (Render Starter, Railway, Fly) and leave the brain free: the engine is the

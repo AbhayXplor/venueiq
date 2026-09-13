@@ -341,3 +341,37 @@ body {
     transition-duration: 0.001ms !important;
   }
 }
+
+/* ---------------------------------------------------------------------------
+   ConsoleWakeNote — a small pulse shown while the engine is still waking up.
+   The note itself renders nothing once the console is live; this only styles
+   the dot that sits beside it.
+   --------------------------------------------------------------------------- */
+
+.vq-wake-dot {
+  display: inline-block;
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: currentColor;
+  animation: vq-wake-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes vq-wake-pulse {
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* The global rule above would freeze this on its dimmest frame. */
+  .vq-wake-dot {
+    animation: none;
+    opacity: 0.75;
+  }
+}

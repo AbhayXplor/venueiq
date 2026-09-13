@@ -20,7 +20,7 @@
  * and the first one to deliver a snapshot wins; the loser is closed, so the
  * engine never ends up serving two consoles.
  */
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { io, type Socket } from "socket.io-client";
 import { create } from "zustand";
 import type { ControlAction, Snapshot, TraceEvent } from "./types";
@@ -112,6 +112,56 @@ export function warmEngine(): void {
   // `no-cors` because the engine is a different origin: the reply is opaque and
   // unreadable, which is fine — the request reaching the engine is the point.
   void fetch(`${directEngineUrl()}/health`, { mode: "no-cors", cache: "no-store" }).catch(() => {});
+}
+
+/**
+ * Is the engine answering yet? `null` until we have asked, so a caller stays
+ * silent rather than warning about something it has not verified.
+ *
+ * Free hosting spins an idle service down, so the first visit waits — this is
+ * how a caller finds out whether that is happening right now. The first look
+ * also starts the wake-up. If the engine does not answer we keep asking for
+ * about a minute, which is how long a spun-down instance takes to return, and
+ * then stop: an idle tab left open overnight must not hold the service awake
+ * and spend the month's instance hours.
+ */
+export function useEngineAwake(): boolean | null {
+  const [awake, setAwake] = useState<boolean | null>(null)
+
+  useEffect(() => {
+    let stopped = false
+    let timer: ReturnType<typeof setTimeout> | undefined
+    let attempts = 0
+
+    const ask = async () => {
+      attempts++
+      try {
+        const res = await fetch(`${directEngineUrl()}/health`, {
+          cache: "no-store",
+          signal: AbortSignal.timeout(4000),
+        })
+        if (stopped) return
+        if (res.ok) {
+          setAwake(true)
+          return
+        }
+      } catch {
+        /* not answering yet — which is the case worth saying out loud */
+      }
+      if (stopped) return
+      setAwake(false)
+      if (attempts < 12) timer = setTimeout(ask, 5000)
+    }
+
+    warmEngine()
+    void ask()
+    return () => {
+      stopped = true
+      if (timer) clearTimeout(timer)
+    }
+  }, [])
+
+  return awake
 }
 
 export function connectEngine(): () => void {

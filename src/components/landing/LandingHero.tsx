@@ -10,6 +10,7 @@ import Link from "next/link";
 import { useEffect, useRef } from "react";
 import { SiteHeader } from "./SiteHeader";
 import { STATS } from "./stats";
+import { ConsoleWakeNote } from "@/components/ConsoleWakeNote";
 
 const delay = (d: string) => ({ "--d": d }) as React.CSSProperties;
 
@@ -152,6 +153,9 @@ export function LandingHero({ heroVideo }: { heroVideo: string | null }) {
                 See how it works
               </Link>
             </div>
+
+            {/* Shown only if the engine really is asleep — see ConsoleWakeNote. */}
+            <ConsoleWakeNote className="vq-land-wake" />
           </div>
         </main>
 

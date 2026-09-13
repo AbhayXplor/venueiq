@@ -10,6 +10,7 @@ import { ArrowRight, Bell, BrainCircuit, Compass, Fingerprint, GitBranch, Radio,
 import { useEngine, useEngineStore } from "@/lib/engine-client";
 import { LivePeek } from "@/components/landing/LivePeek";
 import { Mark } from "@/components/landing/SiteHeader";
+import { ConsoleWakeNote } from "@/components/ConsoleWakeNote";
 
 const AGENTS = [
   {
@@ -180,6 +181,9 @@ export default function LiveScreenPage() {
                 <Smartphone className="h-4 w-4" aria-hidden /> See the visitor app
               </Link>
             </div>
+
+            {/* Only appears while the engine is spun down and waking up. */}
+            <ConsoleWakeNote className="mt-4 inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.18em] text-dim" />
             <div className="mt-7">
               <LiveChips />
             </div>

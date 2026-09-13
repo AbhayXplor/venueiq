@@ -1279,3 +1279,22 @@ html.vq-land-menu-open {
     visibility: visible !important;
   }
 }
+
+/* ---------------------------------------------------------------------------
+   ConsoleWakeNote on the marketing hero.
+
+   Rendered only while the engine is actually spun down and waking, so a warm
+   demo never carries a stale warning under the buttons.
+   --------------------------------------------------------------------------- */
+
+.vq-land-wake {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+  font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
