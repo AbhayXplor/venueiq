@@ -7,7 +7,7 @@ import { createServer } from 'http'
 import { config } from './config'
 import { advanceMinute, buildSnapshot, getState, patchBrain, resetState } from './state/venue'
 import { runAgentCycle, emitTrace, onTrace, recentTrace, resetAgents } from './agents/coordinator'
-import { brainHealth, brainStatus, brainWarm } from './agents/brain-client'
+import { brainAvailable, brainHealth, brainStatus, brainWarm } from './agents/brain-client'
 import { probeEndpoints, qodBoost, resetNac } from './nac'
 import { probeProviders, clearExternalLlm, llmStats, noteExternalLlm } from './llm/provider'
 import { appendHealth } from './recorder'
@@ -93,6 +93,12 @@ function scheduleTick(): void {
 
 io.on('connection', (socket) => {
   emitTrace('ENGINE', 'system', `Console connected (${socket.id.slice(0, 6)})`, { source: 'api' })
+  // Someone is watching, so the reasoning service is about to be needed. On
+  // free hosting the brain sleeps when idle and takes about a minute to wake,
+  // and the graph only runs once they press play — starting the wake-up now
+  // usually means it is ready by then, instead of the first cycle landing on
+  // the fallback chain.
+  void wakeBrain('console opened')
   socket.emit('snapshot', buildSnapshot())
   for (const e of recentTrace(40)) socket.emit('trace', e)
 
@@ -183,6 +189,37 @@ io.on('connection', (socket) => {
 })
 
 /**
+ * Wake a brain that is not answering, and report the recovery on screen.
+ *
+ * A hosted free instance is spun down when idle and can take a minute to answer
+ * again — far longer than a health check budget, which is deliberately short so
+ * a dead brain costs one cycle rather than blocking anything. Fired at boot and
+ * again whenever a console connects, so a waking brain is a visible recovery
+ * instead of a demo that quietly runs the fallback chain all evening.
+ *
+ * Best-effort: a failure here changes nothing, because a cycle falls back on its
+ * own and will try again.
+ */
+let brainWakeInFlight = false
+
+async function wakeBrain(trigger: string): Promise<void> {
+  if (config.agent.mode !== 'langgraph' || brainWakeInFlight || brainAvailable()) return
+  brainWakeInFlight = true
+  try {
+    const woke = await brainWarm()
+    if (!woke) return
+    patchBrain({ mode: 'langgraph', available: true, llmBudget: woke.budget.llmBudget })
+    noteExternalLlm(woke.llm.mode, 0)
+    emitTrace('ENGINE', 'system', `Agent brain answered after ${Math.round(woke.tookMs / 1000)}s · ${trigger} — reasoning on the LangGraph graph`, {
+      source: 'api',
+      detail: `reasoning via ${woke.llm.mode} · hosted budget ${woke.budget.llmBudget} calls/run · network ${woke.nac.mode}`,
+    })
+  } finally {
+    brainWakeInFlight = false
+  }
+}
+
+/**
  * Ask every endpoint once and say what came back.
  *
  * Run at boot and again after every scenario reset, because a reset clears the
@@ -242,21 +279,9 @@ async function boot(): Promise<void> {
       })
       await probeProviders()
 
-      // A hosted free instance is spun down when idle and can take a minute to
-      // answer again — far longer than the 2.5s health check above, which is
-      // deliberately short so a dead brain costs one cycle rather than blocking
-      // it. This is the patient second attempt, fired in the background and
-      // reported on screen, so a waking brain is a visible recovery instead of
-      // a demo that quietly runs the fallback chain all evening.
-      void brainWarm().then((woke) => {
-        if (!woke) return
-        patchBrain({ mode: 'langgraph', available: true, llmBudget: woke.budget.llmBudget })
-        noteExternalLlm(woke.llm.mode, 0)
-        emitTrace('ENGINE', 'system', `Agent brain answered after ${Math.round(woke.tookMs / 1000)}s — back on the LangGraph graph`, {
-          source: 'api',
-          detail: `reasoning via ${woke.llm.mode} · hosted budget ${woke.budget.llmBudget} calls/run · network ${woke.nac.mode}`,
-        })
-      })
+      // The 2.5s check above is deliberately short so a dead brain costs one
+      // cycle rather than blocking the boot. This is the patient second attempt.
+      void wakeBrain('at boot')
     }
   } else {
     await probeProviders()
