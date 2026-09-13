@@ -238,7 +238,7 @@ async function boot(): Promise<void> {
       emitTrace('ENGINE', 'system', 'Agent brain unreachable — running the in-process TypeScript agent chain', {
         source: 'api',
         level: 'warn',
-        detail: `${brainStatus().url} (${brainStatus().lastError}) · start it with: cd mini-services/agent-brain && python -m app.main`,
+        detail: `${brainStatus().url} (${brainStatus().lastError}) · a hosted brain may simply be waking — retrying in the background; locally, start it with: cd mini-services/agent-brain && python -m app.main`,
       })
       await probeProviders()
 
