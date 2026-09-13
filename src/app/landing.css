@@ -1,0 +1,1281 @@
+/* ===========================================================================
+   VenueIQ — marketing surface.
+
+   Typographic system: Inter for everything structural, Instrument Serif italic
+   for a single accented phrase per headline. Pure black, liquid-glass chrome,
+   one accent phrase in muted grey. Every rule here is scoped under `.vq-land`
+   so it can never leak into the operator console or the visitor view.
+   =========================================================================== */
+
+.vq-land {
+  /* --- tokens (default / ~1440px) --- */
+  --bg: #000000;
+  --text: #ffffff;
+  --muted: #9a9a9a;
+  --stat: #d8d8d8;
+  --border: rgba(255, 255, 255, 0.16);
+  --border-soft: rgba(255, 255, 255, 0.12);
+
+  --logo: 15.5px;
+  --logo-mark: 22px;
+  --nav: 14px;
+  --nav-h: 40px;
+  --btn: 13.5px;
+  --btn-h: 40px;
+  --hero-btn-h: 42px;
+  --h1: 48px;
+  --lede: 15.5px;
+  --badge: 12.5px;
+  --stat-size: 13.5px;
+  --header-y: 22px;
+  --header-x: 40px;
+  --stats-x: 72px;
+  --stats-y: 36px;
+  --hero-gap: 85px;
+  --copy-max: 860px;
+  --lede-max: 470px;
+
+  position: relative;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: #000;
+  color: var(--text);
+  overflow-x: hidden;
+  font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+.vq-land *,
+.vq-land *::before,
+.vq-land *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/*
+   `:where()` keeps this reset at the same specificity as a single class, so a
+   link that is styled as a button still wins with its own colour. Written as
+   plain `.vq-land a` it outranked `.vq-land-btn-solid`, which is how the solid
+   call-to-action ended up white-on-white and invisible — the reset inherited
+   white from the page and the button's own `color: #111` lost the cascade.
+*/
+/*
+   `:where()` keeps this reset at the same specificity as a single class, so a
+   link that is styled as a button still wins with its own colour. Written as
+   plain `.vq-land a` it outranked `.vq-land-btn-solid`, which is how the solid
+   call-to-action ended up white-on-white and invisible — the reset inherited
+   white from the page and the button's own `color: #111` lost the cascade.
+   Three separate controls were affected, two of them on /how.
+*/
+.vq-land :where(a) {
+  color: inherit;
+  text-decoration: none;
+}
+
+.vq-land button {
+  font-family: inherit;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* ===========================================================================
+   Layers — black, ambient field, content, grain.
+   =========================================================================== */
+
+.vq-land-photo {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  background: #000;
+  pointer-events: none;
+}
+
+.vq-land-photo video,
+.vq-land-photo img {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 1;
+}
+
+/* Soft legibility scrims — the frame stays fully visible through the middle, but the two
+   edges where chrome sits get enough darkness to keep white text readable.
+
+   The bottom scrim covers the headline, lede and buttons. The top one exists for the logo
+   wordmark alone: the nav pills and the header CTA carry their own opaque backgrounds, so
+   they read over any footage, but the logo is plain white text with nothing behind it.
+   Measured against the film's brightest region, an unscrimmed logo sits at ~2.3:1 where
+   4.5:1 is the floor — so the top ~26% is dimmed and then released. */
+.vq-land-photo::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.58) 0%, rgba(0, 0, 0, 0.32) 9%, transparent 26%),
+    linear-gradient(to top, rgba(0, 0, 0, 0.62) 0%, rgba(0, 0, 0, 0.16) 34%, transparent 62%);
+}
+
+/* When there is no video asset, the ambient field carries the frame on its own:
+   venue glow low on the horizon, a cellular grid overhead, both drifting very
+   slowly. Pure CSS — no invented assets, no external URLs. */
+.vq-land-field {
+  position: absolute;
+  inset: -18%;
+}
+
+.vq-land-field::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(42% 40% at 68% 22%, rgba(52, 216, 195, 0.17), transparent 62%),
+    radial-gradient(40% 46% at 20% 76%, rgba(232, 163, 61, 0.17), transparent 64%),
+    radial-gradient(62% 56% at 50% 122%, rgba(96, 126, 255, 0.13), transparent 70%),
+    radial-gradient(120% 92% at 50% 45%, #05070d 0%, #000000 72%);
+  filter: blur(4px);
+  animation: vqland-drift 34s ease-in-out infinite alternate;
+}
+
+.vq-land-field::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 92px 92px;
+  -webkit-mask-image: radial-gradient(72% 62% at 50% 44%, #000 12%, transparent 78%);
+  mask-image: radial-gradient(72% 62% at 50% 44%, #000 12%, transparent 78%);
+  opacity: 0.55;
+  animation: vqland-grid 70s linear infinite;
+}
+
+@keyframes vqland-drift {
+  0% { transform: translate3d(-1.5%, 1%, 0) scale(1.02); }
+  100% { transform: translate3d(1.5%, -1.5%, 0) scale(1.08); }
+}
+
+@keyframes vqland-grid {
+  0% { background-position: 0 0, 0 0; }
+  100% { background-position: 92px 184px, 184px 92px; }
+}
+
+.vq-land-grain {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  pointer-events: none;
+  opacity: 0.42;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.34'/%3E%3C/svg%3E");
+  background-size: 160px 160px;
+}
+
+.vq-land-page {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+/* ===========================================================================
+   Header — three columns: logo, pills, CTA.
+   =========================================================================== */
+
+.vq-land-header {
+  position: relative;
+  z-index: 50;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  padding: var(--header-y) var(--header-x) 10px;
+}
+
+.vq-land-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  justify-self: start;
+  font-size: var(--logo);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  color: #fff;
+  white-space: nowrap;
+}
+
+.vq-land-logo-mark {
+  width: var(--logo-mark);
+  height: var(--logo-mark);
+  flex: 0 0 auto;
+  color: #fff;
+}
+
+.vq-land-logo-suffix {
+  font-weight: 400;
+}
+
+.vq-land-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-self: center;
+}
+
+.vq-land-nav a {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  height: var(--nav-h);
+  padding: 0 18px;
+  border-radius: 7px;
+  overflow: hidden;
+  border: 1px solid rgba(198, 198, 198, 0.55);
+  background: linear-gradient(105deg, #050505 0%, #2a2a2a 48%, #4a4a4a 100%);
+  color: #f3f3f3;
+  font-size: var(--nav);
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  transition: background 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease;
+}
+
+.vq-land-nav a::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 30%, rgba(255, 255, 255, 0.16) 50%, transparent 70%);
+  transform: translateX(-120%);
+  transition: transform 0.6s ease;
+  pointer-events: none;
+}
+
+.vq-land-nav a:hover {
+  border-color: rgba(235, 235, 235, 0.9);
+  background: linear-gradient(105deg, #111111 0%, #3a3a3a 45%, #6a6a6a 100%);
+  box-shadow: 0 0 18px rgba(200, 210, 230, 0.18);
+}
+
+.vq-land-nav a:hover::before {
+  transform: translateX(120%);
+}
+
+.vq-land-nav a[aria-current="page"] {
+  border-color: rgba(235, 235, 235, 0.75);
+  color: #fff;
+}
+
+.vq-land-header-cta {
+  justify-self: end;
+}
+
+.vq-land-burger {
+  display: none;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: rgba(8, 8, 8, 0.55);
+  cursor: pointer;
+  z-index: 60;
+  transition: border-color 0.25s ease, background 0.25s ease;
+}
+
+.vq-land-burger:hover {
+  border-color: rgba(255, 255, 255, 0.32);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.vq-land-burger span {
+  grid-area: 1 / 1;
+  display: block;
+  width: 16px;
+  height: 1.5px;
+  border-radius: 1px;
+  background: #fff;
+  transition: transform 0.25s ease, opacity 0.2s ease;
+}
+
+.vq-land-burger span:nth-child(1) { transform: translateY(-6.5px); }
+.vq-land-burger span:nth-child(3) { transform: translateY(6.5px); }
+
+.vq-land .vq-menu-open .vq-land-burger span:nth-child(1) { transform: translateY(0) rotate(45deg); }
+.vq-land .vq-menu-open .vq-land-burger span:nth-child(2) { opacity: 0; }
+.vq-land .vq-menu-open .vq-land-burger span:nth-child(3) { transform: translateY(0) rotate(-45deg); }
+
+/* ===========================================================================
+   Buttons — one liquid-glass language for every action on the site.
+   =========================================================================== */
+
+.vq-land-btn {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: var(--btn-h);
+  padding: 0 16px;
+  border-radius: 6px;
+  font-size: var(--btn);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease, color 0.35s ease, filter 0.35s ease;
+}
+
+.vq-land-btn::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 20%, rgba(255, 255, 255, 0.45) 48%, transparent 76%);
+  transform: translateX(-130%);
+  transition: transform 0.65s ease;
+  pointer-events: none;
+}
+
+.vq-land-btn:hover::after {
+  transform: translateX(130%);
+}
+
+.vq-land-btn-solid {
+  background: linear-gradient(180deg, #ffffff 0%, #e7e7e7 48%, #cfcfcf 100%);
+  color: #111;
+  border: 1px solid #fff;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.95);
+}
+
+.vq-land-btn-solid:hover {
+  background: linear-gradient(180deg, #ffffff 0%, #f3f6ff 42%, #d5def2 100%);
+  border-color: #f2f6ff;
+  box-shadow: inset 0 1px 0 #fff, 0 0 22px rgba(186, 208, 255, 0.35), 0 8px 18px rgba(255, 255, 255, 0.12);
+}
+
+.vq-land-btn-ghost {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(0, 0, 0, 0.45) 50%, rgba(160, 175, 200, 0.08));
+  color: #fff;
+  border: 1px solid rgba(198, 198, 198, 0.45);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.vq-land-btn-ghost:hover {
+  background: linear-gradient(135deg, rgba(210, 225, 255, 0.18), rgba(0, 0, 0, 0.35) 48%, rgba(180, 195, 220, 0.16));
+  border-color: rgba(220, 230, 255, 0.75);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 0 20px rgba(170, 200, 255, 0.22);
+}
+
+/* Hero-level ghost gets a stronger frost. */
+.vq-land-hero .vq-land-btn-ghost {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(0, 0, 0, 0.5) 46%, rgba(150, 170, 200, 0.1));
+  border: 1px solid rgba(198, 198, 198, 0.55);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+}
+
+.vq-land-hero .vq-land-btn-ghost:hover {
+  border-color: rgba(220, 230, 255, 0.8);
+  box-shadow: 0 0 24px rgba(170, 200, 255, 0.28);
+}
+
+.vq-land-hero .vq-land-btn {
+  height: var(--hero-btn-h);
+  padding: 0 18px;
+}
+
+.vq-land-hero .vq-land-btn-solid:hover {
+  box-shadow: inset 0 1px 0 #fff, 0 0 26px rgba(186, 208, 255, 0.4), 0 8px 18px rgba(255, 255, 255, 0.14);
+}
+
+/* ===========================================================================
+   Hero — bottom-anchored, never vertically centred.
+   =========================================================================== */
+
+.vq-land-hero {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 8px 24px var(--hero-gap);
+  min-height: 0;
+}
+
+.vq-land-copy {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  max-width: var(--copy-max);
+  width: 100%;
+}
+
+.vq-land-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 22px;
+  padding: 9px 15px;
+  border: 0;
+  border-radius: 5px;
+  background: linear-gradient(90deg, #7d7d7d 0%, #2a2a2a 52%, #0a0a0a 100%);
+  color: #f2f2f2;
+  font-size: var(--badge);
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+.vq-land-badge-star {
+  width: 18px;
+  height: 20px;
+  flex: 0 0 auto;
+  color: #fff;
+  filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.45));
+}
+
+.vq-land-h1 {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: var(--h1);
+  font-weight: 500;
+  letter-spacing: -0.045em;
+  line-height: 1.12;
+  color: #fff;
+}
+
+.vq-land-line {
+  display: block;
+  overflow: hidden;
+  padding: 0.06em 0.15em 0.14em;
+}
+
+.vq-land-h1 em {
+  font-family: "Instrument Serif", "Times New Roman", Times, serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: 1.08em;
+  letter-spacing: -0.03em;
+  color: #9a9a9a;
+  animation: vqland-in-em 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.72s both;
+}
+
+.vq-land-lede {
+  max-width: var(--lede-max);
+  margin-top: 18px;
+  color: #9a9a9a;
+  font-size: var(--lede);
+  font-weight: 400;
+  line-height: 1.55;
+  letter-spacing: -0.015em;
+}
+
+.vq-land-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 26px;
+}
+
+/* ===========================================================================
+   Stats strip — three sourced numbers, nothing else below the fold.
+   =========================================================================== */
+
+.vq-land-stats {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px 24px;
+  padding: 0 var(--stats-x) var(--stats-y);
+  padding-bottom: max(var(--stats-y), env(safe-area-inset-bottom));
+  color: var(--stat);
+}
+
+.vq-land-stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  font-size: var(--stat-size);
+  letter-spacing: -0.015em;
+  white-space: nowrap;
+}
+
+.vq-land-stat-icon {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 auto;
+  color: #e8e8e8;
+}
+
+.vq-land-stat-icon-wide {
+  width: 38px;
+  height: 21px;
+  flex: 0 0 auto;
+}
+
+.vq-land-stat-text {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.vq-land-stat-value {
+  color: #ffffff;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.vq-land-stat-source {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ===========================================================================
+   Entrance motion. Resting state is always visible, so a broken animation can
+   never leave a blank page.
+   =========================================================================== */
+
+.vq-land .vq-appear {
+  animation-duration: 1.05s;
+  animation-fill-mode: both;
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  animation-delay: var(--d, 0.08s);
+}
+
+.vq-land .vq-appear-scale { animation-name: vqland-in-scale; }
+.vq-land .vq-appear-soft { animation-name: vqland-in-soft; }
+.vq-land .vq-appear-mask { animation-name: vqland-in-mask; }
+.vq-land .vq-appear-pop { animation-name: vqland-in-pop; }
+.vq-land .vq-appear-btn { animation-name: vqland-in-btn; }
+.vq-land .vq-appear-side { animation-name: vqland-in-side; }
+.vq-land .vq-appear-stat { animation-name: vqland-in-stat; }
+
+.vq-land .is-in {
+  animation: none;
+  opacity: 1;
+  transform: none;
+  clip-path: none;
+  filter: none;
+}
+
+@keyframes vqland-in-scale {
+  from { opacity: 0; transform: scale(0.84); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes vqland-in-soft {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes vqland-in-mask {
+  from { opacity: 0; transform: translateY(40%); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes vqland-in-pop {
+  0% { opacity: 0; transform: scale(0.9); }
+  70% { opacity: 1; transform: scale(1.03); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes vqland-in-btn {
+  from { opacity: 0; transform: translateY(18px) scale(0.94); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes vqland-in-side {
+  from { opacity: 0; transform: translateX(22px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes vqland-in-stat {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes vqland-in-star {
+  0% { opacity: 0; transform: scale(0.2) rotate(-50deg); }
+  65% { opacity: 1; transform: scale(1.2) rotate(8deg); }
+  100% { opacity: 1; transform: scale(1) rotate(0deg); }
+}
+
+@keyframes vqland-in-em {
+  from { opacity: 0.35; filter: blur(4px); }
+  to { opacity: 1; filter: blur(0); }
+}
+
+.vq-land .vq-land-badge-star {
+  animation: vqland-in-star 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.28s both;
+}
+
+/* ===========================================================================
+   Mobile menu
+   =========================================================================== */
+
+.vq-land-backdrop {
+  display: block;
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: rgba(8, 8, 8, 0.42);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.28s ease, visibility 0.28s ease, backdrop-filter 0.28s ease;
+}
+
+.vq-land .vq-menu-open .vq-land-backdrop {
+  opacity: 1;
+  visibility: visible;
+  -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: blur(24px);
+}
+
+/* ===========================================================================
+   Long-form document surface (/how) — same language, scrolls normally.
+   =========================================================================== */
+
+.vq-land-doc {
+  position: relative;
+  z-index: 1;
+  margin: 0 auto;
+  width: 100%;
+  max-width: 1080px;
+  padding: 24px 32px 96px;
+}
+
+.vq-land-doc-hero {
+  padding: 56px 0 64px;
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.vq-land-eyebrow {
+  font-size: 11.5px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #7d7d7d;
+}
+
+.vq-land-doc-h1 {
+  margin-top: 18px;
+  font-size: clamp(38px, 5.4vw, 64px);
+  font-weight: 500;
+  letter-spacing: -0.045em;
+  line-height: 1.08;
+  max-width: 20ch;
+}
+
+.vq-land-doc-h1 em {
+  font-family: "Instrument Serif", "Times New Roman", Times, serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: 1.08em;
+  letter-spacing: -0.03em;
+  color: #9a9a9a;
+}
+
+.vq-land-doc-lead {
+  margin-top: 22px;
+  max-width: 62ch;
+  color: #9a9a9a;
+  font-size: 16px;
+  line-height: 1.65;
+  letter-spacing: -0.011em;
+}
+
+.vq-land-doc-section {
+  padding: 64px 0;
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.vq-land-doc-section:last-child {
+  border-bottom: 0;
+}
+
+.vq-land-doc-h2 {
+  margin-top: 14px;
+  font-size: clamp(24px, 2.6vw, 34px);
+  font-weight: 500;
+  letter-spacing: -0.035em;
+  line-height: 1.16;
+}
+
+.vq-land-doc-h3 {
+  font-size: 15.5px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.vq-land-doc-p {
+  margin-top: 14px;
+  max-width: 68ch;
+  color: #9a9a9a;
+  font-size: 14.5px;
+  line-height: 1.68;
+  letter-spacing: -0.011em;
+}
+
+.vq-land-doc-grid {
+  display: grid;
+  gap: 14px;
+  margin-top: 32px;
+}
+
+.vq-land-doc-grid-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.vq-land-doc-card {
+  border: 1px solid var(--border-soft);
+  border-radius: 12px;
+  padding: 22px 20px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.008));
+}
+
+.vq-land-doc-card-num {
+  font-size: 30px;
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+  color: #fff;
+}
+
+.vq-land-doc-card p {
+  margin-top: 10px;
+  color: #9a9a9a;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.vq-land-doc-cite {
+  display: block;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  color: #5f5f5f;
+  font-size: 11px;
+  letter-spacing: 0.01em;
+  line-height: 1.5;
+}
+
+.vq-land-doc-steps {
+  display: grid;
+  gap: 0;
+  margin-top: 32px;
+  border-top: 1px solid var(--border-soft);
+}
+
+.vq-land-doc-step {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  gap: 20px;
+  padding: 22px 0;
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.vq-land-doc-step-idx {
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  color: #5f5f5f;
+  padding-top: 3px;
+  font-variant-numeric: tabular-nums;
+}
+
+.vq-land-doc-step h3 {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.vq-land-doc-step p {
+  margin-top: 7px;
+  max-width: 72ch;
+  color: #9a9a9a;
+  font-size: 13.5px;
+  line-height: 1.65;
+}
+
+.vq-land-doc-api {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 10px;
+  margin-top: 30px;
+}
+
+.vq-land-doc-api-item {
+  border: 1px solid var(--border-soft);
+  border-radius: 10px;
+  padding: 14px 16px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.vq-land-doc-api-item code {
+  display: block;
+  font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11.5px;
+  letter-spacing: -0.01em;
+  color: #ededed;
+}
+
+.vq-land-doc-api-item span {
+  display: block;
+  margin-top: 7px;
+  color: #757575;
+  font-size: 11.5px;
+  line-height: 1.5;
+}
+
+.vq-land-doc-honest {
+  border-left: 2px solid rgba(255, 255, 255, 0.28);
+  padding-left: 20px;
+}
+
+.vq-land-doc-honest ul {
+  margin-top: 14px;
+  list-style: none;
+  display: grid;
+  gap: 12px;
+  max-width: 74ch;
+}
+
+.vq-land-doc-honest li {
+  color: #9a9a9a;
+  font-size: 13.5px;
+  line-height: 1.65;
+  padding-left: 16px;
+  position: relative;
+}
+
+.vq-land-doc-honest li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.62em;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #6a6a6a;
+}
+
+.vq-land-doc-honest li b {
+  color: #ededed;
+  font-weight: 600;
+}
+
+.vq-land-doc-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 40px 0 0;
+  color: #5f5f5f;
+  font-size: 11.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.vq-land-doc-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 30px;
+}
+
+/* ===========================================================================
+   Shared product chrome — reused by the console and the visitor view so all
+   three surfaces read as one product. Deliberately unscoped: no resets here.
+   =========================================================================== */
+
+.vq-glass-pill {
+  position: relative;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 34px;
+  padding: 0 14px;
+  border-radius: 7px;
+  border: 1px solid rgba(198, 198, 198, 0.42);
+  background: linear-gradient(105deg, #050505 0%, #242424 48%, #3e3e3e 100%);
+  color: #f1f1f1;
+  font-size: 12.5px;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  transition: border-color 0.35s ease, background 0.35s ease, box-shadow 0.35s ease;
+}
+
+.vq-glass-pill::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 30%, rgba(255, 255, 255, 0.15) 50%, transparent 70%);
+  transform: translateX(-120%);
+  transition: transform 0.6s ease;
+  pointer-events: none;
+}
+
+.vq-glass-pill:hover {
+  border-color: rgba(235, 235, 235, 0.85);
+  background: linear-gradient(105deg, #111111 0%, #333333 45%, #5c5c5c 100%);
+  box-shadow: 0 0 18px rgba(200, 210, 230, 0.16);
+}
+
+.vq-glass-pill:hover::before {
+  transform: translateX(120%);
+}
+
+.vq-glass-btn {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 34px;
+  padding: 0 14px;
+  border-radius: 6px;
+  font-size: 12.5px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+  cursor: pointer;
+  background: linear-gradient(180deg, #ffffff 0%, #e9e9e9 48%, #d3d3d3 100%);
+  color: #111;
+  border: 1px solid #ffffff;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  transition: background 0.35s ease, box-shadow 0.35s ease, border-color 0.35s ease;
+}
+
+.vq-glass-btn::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 20%, rgba(255, 255, 255, 0.5) 48%, transparent 76%);
+  transform: translateX(-130%);
+  transition: transform 0.65s ease;
+  pointer-events: none;
+}
+
+.vq-glass-btn:hover {
+  background: linear-gradient(180deg, #ffffff 0%, #f4f7ff 42%, #d8e0f4 100%);
+  box-shadow: inset 0 1px 0 #fff, 0 0 20px rgba(186, 208, 255, 0.32);
+}
+
+.vq-glass-btn:hover::after {
+  transform: translateX(130%);
+}
+
+/* ===========================================================================
+   Responsive — the same ladder as the reference system.
+   =========================================================================== */
+
+@media (min-width: 1600px) {
+  .vq-land {
+    --logo: 17px;
+    --logo-mark: 24px;
+    --nav: 15px;
+    --nav-h: 44px;
+    --btn: 15px;
+    --btn-h: 44px;
+    --hero-btn-h: 48px;
+    --h1: 64px;
+    --lede: 18px;
+    --badge: 13.5px;
+    --stat-size: 15px;
+    --header-y: 28px;
+    --header-x: 64px;
+    --stats-x: 96px;
+    --stats-y: 44px;
+    --copy-max: 980px;
+    --lede-max: 540px;
+  }
+  .vq-land-nav a { padding: 0 20px; }
+  .vq-land-badge { margin-bottom: 26px; }
+  .vq-land-lede { margin-top: 22px; }
+  .vq-land-actions { margin-top: 30px; gap: 12px; }
+  .vq-land-stat-icon { width: 22px; height: 22px; }
+  .vq-land-stat-icon-wide { width: 45px; height: 24px; }
+}
+
+@media (min-width: 1920px) {
+  .vq-land {
+    --logo: 18px;
+    --logo-mark: 26px;
+    --nav: 16px;
+    --nav-h: 48px;
+    --btn: 16px;
+    --btn-h: 48px;
+    --hero-btn-h: 52px;
+    --h1: 76px;
+    --lede: 20px;
+    --badge: 14.5px;
+    --stat-size: 16px;
+    --header-y: 32px;
+    --header-x: 80px;
+    --stats-x: 120px;
+    --stats-y: 52px;
+    --copy-max: 1120px;
+    --lede-max: 620px;
+  }
+  .vq-land-nav { gap: 10px; }
+  .vq-land-nav a { padding: 0 22px; }
+  .vq-land-btn { padding: 0 22px; }
+  .vq-land-badge { padding: 10px 15px; }
+  .vq-land-stat-icon-wide { width: 48px; height: 26px; }
+}
+
+@media (min-width: 2560px) {
+  .vq-land {
+    --h1: 88px;
+    --lede: 22px;
+    --header-x: 120px;
+    --stats-x: 160px;
+    --copy-max: 1280px;
+    --lede-max: 680px;
+  }
+}
+
+@media (min-width: 1280px) and (max-width: 1599px) {
+  .vq-land {
+    --h1: 54px;
+    --lede: 16px;
+    --header-x: 48px;
+    --stats-x: 80px;
+    --copy-max: 900px;
+  }
+}
+
+@media (min-width: 901px) and (max-width: 1279px) {
+  .vq-land {
+    --logo: 15px;
+    --nav: 13px;
+    --nav-h: 36px;
+    --btn: 13px;
+    --btn-h: 38px;
+    --hero-btn-h: 40px;
+    --h1: 42px;
+    --lede: 15px;
+    --badge: 12px;
+    --stat-size: 12.5px;
+    --header-y: 16px;
+    --header-x: 28px;
+    --stats-x: 36px;
+    --stats-y: 28px;
+    --hero-gap: 64px;
+    --copy-max: 760px;
+    --lede-max: 440px;
+  }
+  .vq-land-nav a { padding: 0 14px; }
+  .vq-land-badge { margin-bottom: 16px; }
+  .vq-land-lede { margin-top: 14px; }
+  .vq-land-actions { margin-top: 20px; }
+  /* Narrow laptops: the three stats would otherwise touch the edges, so let
+     them wrap and centre rather than clip. */
+  .vq-land-stats { justify-content: center; --stats-x: 28px; }
+}
+
+/* One frame, no scroll, on desktop. */
+@media (min-width: 901px) {
+  .vq-land-page {
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+  }
+}
+
+@media (min-width: 901px) and (max-height: 850px) {
+  .vq-land {
+    --header-y: 14px;
+    --stats-y: 24px;
+    --hero-gap: 48px;
+    --h1: 40px;
+  }
+  .vq-land-badge { margin-bottom: 12px; }
+  .vq-land-lede { margin-top: 12px; }
+  .vq-land-actions { margin-top: 16px; }
+}
+
+@media (min-width: 901px) and (max-height: 720px) {
+  .vq-land {
+    --h1: 34px;
+    --lede: 14px;
+    --hero-gap: 32px;
+    --stats-y: 18px;
+    --nav-h: 30px;
+    --btn-h: 34px;
+    --hero-btn-h: 36px;
+  }
+  .vq-land-badge { margin-bottom: 8px; }
+}
+
+@media (max-width: 900px) {
+  .vq-land-page {
+    min-height: 100dvh;
+    height: auto;
+    overflow: visible;
+  }
+
+  .vq-land-header {
+    grid-template-columns: 1fr auto auto;
+    gap: 8px;
+    padding: max(16px, env(safe-area-inset-top)) 18px 12px;
+  }
+
+  .vq-land-logo,
+  .vq-land-header-cta,
+  .vq-land-burger {
+    z-index: 80;
+  }
+
+  .vq-land-burger {
+    display: grid;
+  }
+
+  /* Nav becomes a full-viewport column behind the burger. */
+  .vq-land-nav {
+    position: fixed;
+    inset: 0;
+    z-index: 45;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: center;
+    gap: 12px;
+    padding: 96px 22px 32px;
+    padding-top: max(96px, calc(env(safe-area-inset-top) + 88px));
+    background: transparent;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.28s ease, visibility 0.28s ease;
+  }
+
+  .vq-land .vq-menu-open .vq-land-nav {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .vq-land-nav a {
+    height: 56px;
+    justify-content: center;
+    font-size: 19px;
+    border-radius: 10px;
+    padding: 0 18px;
+  }
+
+  .vq-land-hero {
+    padding: 20px 20px 64px;
+    align-items: flex-end;
+  }
+
+  .vq-land-copy,
+  .vq-land-lede {
+    max-width: 100%;
+  }
+
+  .vq-land-stats {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 16px;
+    padding: 0 20px var(--stats-y);
+  }
+
+  .vq-land-stat {
+    white-space: normal;
+  }
+
+  .vq-land {
+    --logo: 16px;
+    --btn: 15px;
+    --btn-h: 46px;
+    --hero-btn-h: 48px;
+    --h1: 36px;
+    --lede: 16.5px;
+    --badge: 13.5px;
+    --stat-size: 15px;
+    --header-y: 16px;
+    --header-x: 18px;
+    --stats-y: 28px;
+    --hero-gap: 36px;
+  }
+
+  .vq-land-doc {
+    padding: 8px 20px 72px;
+  }
+  .vq-land-doc-grid-3 {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .vq-land-doc-section {
+    padding: 48px 0;
+  }
+}
+
+@media (max-width: 560px) {
+  .vq-land {
+    --h1: 34px;
+    --lede: 16px;
+    --header-x: 16px;
+  }
+  .vq-land-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+  .vq-land-actions .vq-land-btn {
+    width: 100%;
+  }
+}
+
+html.vq-land-menu-open {
+  overflow: hidden;
+}
+
+/* ===========================================================================
+   Reduced motion — nothing moves, nothing hides.
+   =========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .vq-land *,
+  .vq-land *::before,
+  .vq-land *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+  .vq-land .vq-appear,
+  .vq-land-photo,
+  .vq-land .vq-land-h1 em,
+  .vq-land .vq-land-badge-star,
+  .vq-land-field::before,
+  .vq-land-field::after {
+    opacity: 1 !important;
+    transform: none !important;
+    clip-path: none !important;
+    filter: none !important;
+    visibility: visible !important;
+  }
+}

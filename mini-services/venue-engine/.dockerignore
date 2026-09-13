@@ -1,0 +1,9 @@
+# Never bake secrets or local dependencies into an image — the platform supplies
+# configuration as environment variables at run time.
+.env
+.env.*
+node_modules
+data
+scripts
+Dockerfile
+.dockerignore

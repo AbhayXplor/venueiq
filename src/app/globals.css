@@ -1,0 +1,343 @@
+@import "tailwindcss";
+@import "./landing.css";
+@import "./hero-film.css";
+
+/* ===========================================================================
+   VenueIQ — app surfaces (operator console, visitor view, live screen).
+
+   The product surfaces keep the marketing page's language: black, Inter for
+   structure, Instrument Serif italic for one accented phrase. Two things
+   differ from the landing page, and both are deliberate.
+
+   1. THE CANVAS IS NOT PURE BLACK. The landing page is black *over a photo*,
+      so the darkness has a backdrop and reads as depth. The console has no
+      backdrop, and when the page and every card are both #000 nothing sits in
+      front of anything — the console reads as an unlit room rather than a
+      workspace. So: a near-black canvas, panels a step above it, cards above
+      that, and wells *below* it. Depth comes from the surface scale below,
+      which is why html/body stays #000 for the landing page while the app
+      wrappers opt into --color-ink-900.
+
+   2. THERE IS A STATUS HUE RAMP. An earlier pass stripped all colour out, on
+      the correct instinct that a large orange panel looks like decoration and
+      not design. But it overshot: the status ladder is *information*, and a
+      supervisor must be able to read six zones at a glance. The resolution is
+      scale, not hue-abstinence — status colour appears only as dots, bars and
+      hairline edges, never as a large fill. A coloured panel is decoration; a
+      coloured dot is data.
+   =========================================================================== */
+
+@theme {
+  /* ---- surface scale ----------------------------------------------------
+     Five real levels: three above the canvas so things can be *in front of*
+     each other, one below so wells can be *behind* it. Monotonic by lightness,
+     so the ink-* names stay interchangeable with the semantic ones. */
+  --color-ink-950: #040507; /* well — recessed floor, troughs, code wells */
+  --color-ink-900: #08090c; /* canvas — the app page background */
+  --color-ink-850: #0f1319; /* panel — a card sitting on the canvas */
+  --color-ink-800: #171c23; /* raised — contents of a panel: zone cards, rows */
+  --color-ink-700: #1f252e; /* hover — highest level, interactive surfaces */
+
+  /* Semantic aliases for the same five levels, so intent is readable at the
+     call site: `bg-panel` says why, `bg-ink-850` says what. */
+  --color-canvas: #08090c;
+  --color-panel: #0f1319;
+  --color-raised: #171c23;
+  --color-hover: #1f252e;
+  --color-well: #040507;
+
+  /* The accent is white. Glass, not paint. */
+  --color-acc: #ffffff;
+  --color-acc-dim: rgba(255, 255, 255, 0.08);
+
+  /* ---- status ladder ----------------------------------------------------
+     Crowd pressure, cool to hot: grey → amber → orange → red. This is the one
+     place in the app where hue carries meaning, and it is read as a heat ramp
+     because that is exactly what it describes. Used only at small scale. */
+  --color-calm: #8b93a3; /* neutral: nothing to do */
+  --color-filling: #e0b24c; /* watch: trending up */
+  --color-busy: #f2833a; /* act: over the comfort line */
+  --color-critical: #ff5f56; /* intervene now */
+
+  /* "Up and reporting" is not a pressure state, so it never borrows a hue. */
+  --color-live: #f4f6f9;
+  --color-idle: #6b7280;
+
+  --color-body: #ffffff;
+  --color-dim: #b8b8b8;
+  --color-mute: #9a9a9a;
+
+  /* Legacy names from the pre-monochrome palette. Retained as neutral aliases
+     so a straggler class can never repaint a panel amber again. */
+  --color-amber: #ffffff;
+  --color-amber-hi: #ffffff;
+  --color-amber-dim: rgba(255, 255, 255, 0.08);
+  --color-teal: #c6cbd2;
+  --color-teal-dim: rgba(255, 255, 255, 0.06);
+
+  /* Two families, matching the landing page: Inter, and the serif italic used
+     for accented phrases only. */
+  --font-display: "Inter", system-ui, -apple-system, sans-serif;
+  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+  --font-serif: "Instrument Serif", "Times New Roman", Times, serif;
+  --font-mono: "IBM Plex Mono", "SFMono-Regular", Menlo, monospace;
+
+  --radius-panel: 12px;
+}
+
+html {
+  background: #000;
+  color-scheme: dark;
+}
+
+body {
+  font-family: var(--font-sans);
+  color: var(--color-body);
+  background: #000;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  /* Clip, not hidden: a stray wide child can never produce a horizontal
+     scrollbar, and unlike `overflow: hidden` this does not turn the body into
+     a scroll container, so the console's sticky top bar keeps working. */
+  overflow-x: clip;
+}
+
+::selection {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+/* ---------- shared chrome ---------- */
+
+/* A panel sits ON the canvas: lighter surface, hairline top highlight, and it
+   casts a shadow. Those three together are what make it read as a physical
+   object rather than a rectangle drawn in the same colour as the page. */
+.vq-panel {
+  background: var(--color-panel);
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  border-radius: var(--radius-panel);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 1px 0 rgba(0, 0, 0, 0.5),
+    0 26px 50px -34px rgba(0, 0, 0, 0.92);
+}
+
+/* Contents of a panel — one level above it. */
+.vq-raised {
+  background: var(--color-raised);
+  border: 1px solid rgba(255, 255, 255, 0.065);
+  border-radius: 10px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.045);
+}
+
+/* A recessed surface: map floor, progress troughs, code wells. The inset
+   shadow is the whole point — it drops *below* the canvas so a floor reads as
+   a place people stand rather than an area of empty screen. */
+.vq-well {
+  background: var(--color-well);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  box-shadow:
+    inset 0 2px 12px rgba(0, 0, 0, 0.85),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.028);
+}
+
+.vq-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  background: rgba(255, 255, 255, 0.055);
+  padding: 0.2rem 0.6rem;
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+  color: var(--color-dim);
+  white-space: nowrap;
+}
+
+.vq-chip-xs {
+  font-size: 9.5px;
+  padding: 0.15rem 0.5rem;
+}
+
+.vq-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--color-mute);
+}
+
+/* The one accented phrase per screen, exactly as the landing headline does it. */
+.vq-serif {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+}
+
+.vq-num {
+  font-family: var(--font-display);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+/* ---------- controls ---------- */
+
+/* Liquid-metal segmented control — the nav pill language, tightened. */
+.vq-seg {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.vq-seg > button {
+  position: relative;
+  overflow: hidden;
+  border-radius: 6px;
+  padding: 0.25rem 0.45rem;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--color-mute);
+  transition: color 0.25s ease, background 0.25s ease, border-color 0.25s ease;
+}
+
+.vq-seg > button:hover {
+  color: var(--color-body);
+}
+
+.vq-seg > button[data-on="true"] {
+  border: 1px solid rgba(198, 198, 198, 0.5);
+  background: linear-gradient(105deg, #050505 0%, #2a2a2a 48%, #4a4a4a 100%);
+  color: #fff;
+}
+
+.vq-btn {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  padding: 0.5rem 0.9rem;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.35s ease, box-shadow 0.35s ease, border-color 0.35s ease, color 0.35s ease;
+}
+
+.vq-btn-primary {
+  background: linear-gradient(180deg, #ffffff 0%, #e9e9e9 48%, #d3d3d3 100%);
+  color: #111;
+  border: 1px solid #fff;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+.vq-btn-primary::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 20%, rgba(255, 255, 255, 0.5) 48%, transparent 76%);
+  transform: translateX(-130%);
+  transition: transform 0.65s ease;
+  pointer-events: none;
+}
+.vq-btn-primary:hover {
+  background: linear-gradient(180deg, #ffffff 0%, #f4f7ff 42%, #d8e0f4 100%);
+  box-shadow: inset 0 1px 0 #fff, 0 0 20px rgba(186, 208, 255, 0.3);
+}
+.vq-btn-primary:hover::after {
+  transform: translateX(130%);
+}
+
+.vq-btn-ghost {
+  border: 1px solid rgba(198, 198, 198, 0.42);
+  color: var(--color-body);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.09), rgba(0, 0, 0, 0.45) 50%, rgba(160, 175, 200, 0.07));
+}
+.vq-btn-ghost:hover {
+  border-color: rgba(235, 235, 235, 0.85);
+  background: linear-gradient(135deg, rgba(210, 225, 255, 0.16), rgba(0, 0, 0, 0.35) 48%, rgba(180, 195, 220, 0.14));
+  box-shadow: 0 0 18px rgba(170, 200, 255, 0.18);
+}
+
+:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.75);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* ---------- motion ---------- */
+
+/* Faint monitor grid. Used as the floor markings of the venue plan, where it
+   gives the eye a sense of scale and stops a large dark area reading as void. */
+.vq-grid-bg {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.028) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.028) 1px, transparent 1px);
+  background-size: 26px 26px;
+}
+
+@keyframes vq-pulse {
+  0%, 100% { opacity: 0.35; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.5); }
+}
+.vq-pulse {
+  animation: vq-pulse 2.2s ease-in-out infinite;
+}
+
+@keyframes vq-ping {
+  0% { opacity: 0.7; transform: scale(1); }
+  80%, 100% { opacity: 0; transform: scale(1.35); }
+}
+.vq-ping {
+  animation: vq-ping 1.8s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+@keyframes vq-rise {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.vq-rise {
+  animation: vq-rise 0.5s ease both;
+}
+
+@keyframes vq-slide-in {
+  from { opacity: 0; transform: translateX(-6px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+.vq-slide-in {
+  animation: vq-slide-in 0.35s ease both;
+}
+
+/* Thin scrollbars for panels */
+.vq-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.22) transparent;
+}
+.vq-scroll::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.vq-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "name": "venueiq",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "next dev -p 3000",
+    "build": "next build",
+    "start": "next start",
+    "engine": "cd mini-services/venue-engine && bun run dev"
+  },
+  "dependencies": {
+    "lucide-react": "^0.545.0",
+    "next": "^16.1.3",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "socket.io-client": "^4.8.1",
+    "zustand": "^5.0.3"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.5",
+    "@types/node": "^24.3.1",
+    "@types/react": "^19.1.8",
+    "@types/react-dom": "^19.1.6",
+    "postcss": "^8.5.3",
+    "tailwindcss": "^4.1.5",
+    "typescript": "^5.8.3"
+  }
+}

@@ -1,0 +1,8 @@
+# The brain reads the engine's .env first, so secrets live in one place.
+# A local override is supported but must never be committed.
+.env
+
+__pycache__/
+*.py[cod]
+.venv/
+venv/

@@ -1,0 +1,528 @@
+/* ===========================================================================
+   Hero film — the landing page variant with a full-viewport video.
+
+   Everything here is prefixed .vq-film so it cannot leak into the console or
+   the classic landing layout. The classic hero lives in landing.css and is
+   completely untouched by this file; page.tsx picks between them.
+
+   Two deliberate departures from the reference spec this was built from, both
+   because the alternative is worse:
+
+   1. NO ANIMATION DEPENDS ON JS TO END UP VISIBLE. The reference used
+      transitions driven by a setTimeout, which leaves the page blank if the
+      script never runs. These use keyframes with fill-mode `both`, so the final
+      frame is the visible one whether or not JS ever fires, and the component
+      adds a rAF safety net on top — the same pattern landing.css already uses.
+
+   2. LEGIBILITY, NOT DIMMING. The spec says the film plays raw with no overlay,
+      and it does — there is no scrim here. But white type over an undimmed
+      video disappears the moment the video goes bright, so the copy carries a
+      text-shadow instead. That is a property of the type, not a layer over the
+      film, so the video itself is still unmodified.
+   =========================================================================== */
+
+.vq-film {
+  position: relative;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: #000;
+  color: #fff;
+  font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  overflow-x: clip;
+}
+
+.vq-film *,
+.vq-film *::before,
+.vq-film *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* Same `:where()` reasoning as landing.css: a button-styled link must keep its
+   own colour rather than inheriting the page's. */
+.vq-film :where(a) {
+  color: inherit;
+  text-decoration: none;
+}
+
+.vq-film button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+/* ---------- the film -------------------------------------------------------
+   Raw, full-bleed, never dimmed. pointer-events:none so the video can never
+   swallow a click meant for the nav. */
+
+.vq-film-video {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  background: #000;
+  pointer-events: none;
+}
+
+.vq-film-video video,
+.vq-film-video img {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* When no film is configured at all, a plain dark field carries the frame —
+   neutral on purpose, so it reads as "no footage yet" rather than as a
+   competing visual. */
+.vq-film-field {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(70% 55% at 50% 88%, #12161c 0%, transparent 70%),
+    radial-gradient(120% 90% at 50% 40%, #0a0d12 0%, #040507 74%);
+}
+
+/* ---------- page frame ---------------------------------------------------- */
+
+.vq-film-page {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+/* ---------- liquid glass -------------------------------------------------
+   The reference recipe, verbatim: a 1.4px gradient rim painted with a
+   mask-composite so only the edge shows, over a luminosity-blended blur. */
+
+.liquid-glass {
+  position: relative;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.4);
+  background-blend-mode: luminosity;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border: none;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1);
+}
+
+.liquid-glass::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1.4px;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.3) 0%,
+    rgba(255, 255, 255, 0.1) 20%,
+    rgba(255, 255, 255, 0) 40%,
+    rgba(255, 255, 255, 0) 60%,
+    rgba(255, 255, 255, 0.1) 80%,
+    rgba(255, 255, 255, 0.3) 100%
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* ---------- nav ----------------------------------------------------------- */
+
+.vq-film-navwrap {
+  padding: 24px 24px 0;
+}
+
+.vq-film-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border-radius: 12px;
+  padding: 8px 16px;
+}
+
+.vq-film-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  white-space: nowrap;
+}
+
+.vq-film-brand-suffix {
+  font-weight: 400;
+  opacity: 0.85;
+}
+
+.vq-film-mark {
+  width: 19px;
+  height: 19px;
+  flex-shrink: 0;
+}
+
+.vq-film-navlinks {
+  display: none;
+  gap: 32px;
+  font-size: 14px;
+}
+
+.vq-film-navlinks a {
+  transition: color 0.25s ease;
+}
+
+.vq-film-navlinks a:hover {
+  color: #cbd0d8;
+}
+
+.vq-film-navcta {
+  background: #fff;
+  color: #000;
+  padding: 8px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: background 0.25s ease;
+}
+
+.vq-film-navcta:hover {
+  background: #f3f4f6;
+}
+
+/* Burger: only where the pill nav cannot fit. */
+.vq-film-burger {
+  display: grid;
+  gap: 5px;
+  width: 40px;
+  height: 40px;
+  place-content: center;
+  border-radius: 8px;
+  background: transparent;
+}
+
+.vq-film-burger span {
+  display: block;
+  width: 16px;
+  height: 1.5px;
+  border-radius: 1px;
+  background: #fff;
+  transition: transform 0.25s ease, opacity 0.2s ease;
+}
+
+.vq-film-open .vq-film-burger span:nth-child(1) {
+  transform: translateY(6.5px) rotate(45deg);
+}
+.vq-film-open .vq-film-burger span:nth-child(2) {
+  opacity: 0;
+}
+.vq-film-open .vq-film-burger span:nth-child(3) {
+  transform: translateY(-6.5px) rotate(-45deg);
+}
+
+.vq-film-menu {
+  display: grid;
+  gap: 2px;
+  margin-top: 8px;
+  border-radius: 12px;
+  padding: 8px;
+}
+
+.vq-film-menu a {
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 15px;
+  transition: background 0.2s ease;
+}
+
+.vq-film-menu a:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* ---------- hero ---------------------------------------------------------- */
+
+.vq-film-hero {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 32px 24px 48px;
+}
+
+.vq-film-copy {
+  min-width: 0;
+  /* Type legibility without dimming the film — see the note at the top. */
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55), 0 2px 22px rgba(0, 0, 0, 0.5);
+}
+
+.vq-film-h1 {
+  margin-bottom: 16px;
+  font-size: 36px;
+  font-weight: 400;
+  line-height: 1.08;
+  letter-spacing: -0.04em;
+  max-width: 20ch;
+}
+
+.vq-film-line {
+  display: block;
+}
+
+/* Words are atomic. The per-character spans would otherwise make every letter
+   boundary a legal wrap point, splitting a word across two lines. With this,
+   the browser may only break at the spaces between words. */
+.vq-film-word {
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.vq-film-char {
+  display: inline-block;
+  animation: vq-film-char-in 500ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes vq-film-char-in {
+  from {
+    opacity: 0;
+    transform: translateX(-18px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.vq-film-lede {
+  margin-bottom: 20px;
+  max-width: 46ch;
+  font-size: 16px;
+  line-height: 1.55;
+  color: #d7dbe2;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6), 0 2px 20px rgba(0, 0, 0, 0.55);
+}
+
+.vq-film-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.vq-film-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 32px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+.vq-film-btn-solid {
+  background: #fff;
+  color: #000;
+  border: 1px solid #fff;
+}
+
+.vq-film-btn-solid:hover {
+  background: #ececec;
+}
+
+.vq-film-btn-ghost {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
+.vq-film-btn-ghost:hover {
+  background: #fff;
+  border-color: #fff;
+  color: #000;
+}
+
+/* ---------- aside: the one-line summary plus the cited figures ------------- */
+
+.vq-film-aside {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 32px;
+}
+
+.vq-film-tag {
+  border-radius: 12px;
+  padding: 12px 24px;
+  font-size: 18px;
+  font-weight: 300;
+  letter-spacing: -0.01em;
+}
+
+.vq-film-stats {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  width: 100%;
+  max-width: 420px;
+}
+
+.vq-film-stat {
+  border-radius: 10px;
+  padding: 8px 14px;
+  font-size: 12px;
+  line-height: 1.35;
+  color: #d7dbe2;
+}
+
+.vq-film-stat b {
+  display: inline;
+  margin-right: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.vq-film-stat-source {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ---------- fade-in wrapper ----------------------------------------------
+   Duration and delay are set inline, because they are part of each element's
+   choreography rather than a reusable style. */
+
+.vq-film-fade {
+  animation: vq-film-fade-in 1000ms ease both;
+}
+
+@keyframes vq-film-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ---------- wider screens ------------------------------------------------- */
+
+@media (min-width: 768px) {
+  .vq-film-navwrap {
+    padding: 24px 48px 0;
+  }
+  .vq-film-navlinks {
+    display: flex;
+  }
+  .vq-film-burger,
+  .vq-film-menu {
+    display: none;
+  }
+  .vq-film-hero {
+    padding: 40px 48px 56px;
+  }
+  .vq-film-h1 {
+    font-size: 48px;
+  }
+  .vq-film-lede {
+    font-size: 18px;
+  }
+  .vq-film-tag {
+    font-size: 20px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .vq-film-navwrap {
+    padding: 24px 64px 0;
+  }
+  .vq-film-hero {
+    padding: 48px 64px 64px;
+  }
+  /* Two columns, both bottom-aligned, exactly as the reference lays it out:
+     the argument on the left, the summary and evidence on the right. */
+  .vq-film-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: end;
+    gap: 40px;
+  }
+  .vq-film-h1 {
+    font-size: 60px;
+  }
+  .vq-film-aside {
+    align-items: flex-end;
+    margin-top: 0;
+  }
+  .vq-film-stats {
+    align-items: flex-end;
+  }
+  .vq-film-stat {
+    text-align: right;
+  }
+  .vq-film-tag {
+    font-size: 24px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .vq-film-h1 {
+    font-size: 72px;
+  }
+}
+
+@media (max-width: 420px) {
+  .vq-film-navcta {
+    padding: 8px 14px;
+  }
+  .vq-film-hero {
+    padding: 24px 18px 40px;
+  }
+  .vq-film-h1 {
+    font-size: 30px;
+  }
+}
+
+/* ---------- no-animation fallback ---------------------------------------
+   Added by the component if it finds nothing actually animating. Belt and
+   braces on top of `fill-mode: both`: the page must never be blank. */
+
+.vq-film-static .vq-film-char,
+.vq-film-static .vq-film-fade {
+  animation: none !important;
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+/* ---------- reduced motion -----------------------------------------------
+   Nothing here may leave the page blank. Every animated element is forced to
+   its finished state. */
+
+@media (prefers-reduced-motion: reduce) {
+  .vq-film-char,
+  .vq-film-fade {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .vq-film-btn,
+  .vq-film-navlinks a,
+  .vq-film-navcta {
+    transition: none !important;
+  }
+}

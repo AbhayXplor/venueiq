@@ -1,0 +1,4 @@
+# VenueIQ env files — never commit real credentials
+.env
+.env.local
+.env.*.local

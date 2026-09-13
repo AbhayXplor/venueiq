@@ -1,0 +1,29 @@
+node_modules/
+.next/
+out/
+.env
+.env*.local
+*.log
+
+# Build artefacts
+*.tsbuildinfo
+next-env.d.ts
+mini-services/venue-engine/data/
+mini-services/venue-engine/node_modules/
+
+# agent brain (Python)
+__pycache__/
+*.py[cod]
+mini-services/agent-brain/.venv/
+.DS_Store
+
+# Local-only working artefacts. Neither is part of the shipped app and neither is our
+# own content to publish: screenshots/ is regenerable on demand, scripts/research/ is
+# vendored Nokia and Ollama documentation. See the repo layout note in the README.
+screenshots/
+scripts/research/
+
+# Internal hackathon notes. This file names a mentor and contains their work
+# email address plus private session strategy, none of which belongs in a
+# public repository. It stays on disk and off the remote.
+docs/MENTOR_SESSION_PREP.md

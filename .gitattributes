@@ -1,0 +1,11 @@
+# Normalise line endings in the repository to LF, whatever the checkout.
+#
+# Without this, a Windows checkout commits CRLF. CRLF in a Dockerfile, a shell
+# script or a Python shebang breaks the Linux host that runs it — the kind of
+# failure that only shows up after a deploy, never locally.
+* text=auto eol=lf
+
+# Binary assets. Never normalise, never diff.
+*.mp4 binary
+*.png binary
+*.jpg binary
