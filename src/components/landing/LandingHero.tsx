@@ -7,10 +7,12 @@
  * animations never run the page still renders complete — see the rAF fallback.
  */
 import Link from "next/link";
-import { useEffect, useRef } from "react";
+import { Suspense, useEffect, useRef } from "react";
 import { SiteHeader } from "./SiteHeader";
 import { STATS } from "./stats";
 import { ConsoleWakeNote } from "@/components/ConsoleWakeNote";
+import { LandingStory } from "./LandingStory";
+import { LandingTour } from "./LandingTour";
 
 const delay = (d: string) => ({ "--d": d }) as React.CSSProperties;
 
@@ -105,16 +107,17 @@ export function LandingHero({ heroVideo }: { heroVideo: string | null }) {
   }, []);
 
   return (
-    <div className="vq-land" ref={rootRef}>
-      <div className="vq-land-grain" aria-hidden="true" />
+    <>
+      <div className="vq-land" ref={rootRef}>
+        <div className="vq-land-grain" aria-hidden="true" />
 
-      <div className="vq-land-photo" aria-hidden="true">
-        {heroVideo ? (
-          <video src={heroVideo} autoPlay muted loop playsInline />
-        ) : (
-          <div className="vq-land-field" />
-        )}
-      </div>
+        <div className="vq-land-photo" aria-hidden="true">
+          {heroVideo ? (
+            <video src={heroVideo} autoPlay muted loop playsInline />
+          ) : (
+            <div className="vq-land-field" />
+          )}
+        </div>
 
       <div className="vq-land-page">
         <SiteHeader active="/" />
@@ -178,5 +181,12 @@ export function LandingHero({ heroVideo }: { heroVideo: string | null }) {
         </footer>
       </div>
     </div>
+
+    <LandingStory />
+    {/* Suspense: useSearchParams inside the tour needs a boundary to prerender. */}
+    <Suspense fallback={null}>
+      <LandingTour />
+    </Suspense>
+    </>
   );
 }

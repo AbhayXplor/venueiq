@@ -129,6 +129,18 @@ export default function HowItWorksPage() {
         <div className="vq-land-field" />
       </div>
 
+      {/* same monochrome ambient the other pages carry — no more flat black */}
+      <div
+        aria-hidden
+        className="pointer-events-none fixed inset-0"
+        style={{
+          background:
+            "radial-gradient(1100px 480px at 72% -6%, rgba(255,255,255,0.045), transparent 60%)," +
+            "radial-gradient(900px 500px at 12% 104%, rgba(255,255,255,0.04), transparent 60%)," +
+            "radial-gradient(1400px 900px at 50% 50%, rgba(255,255,255,0.012), transparent 85%)",
+        }}
+      />
+
       <SiteHeader active="/how" />
 
       <main className="vq-land-doc">

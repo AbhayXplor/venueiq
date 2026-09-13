@@ -11,7 +11,7 @@
  * so the console reads as the same product.
  */
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { ArrowLeft, Pause, Play, RotateCcw, Signal } from "lucide-react";
 import { Mark } from "@/components/landing/SiteHeader";
 import { sendControl, useEngine, useEngineStore } from "@/lib/engine-client";
@@ -20,6 +20,7 @@ import { SignalBoard } from "@/components/operator/SignalBoard";
 import { GuardianPanel } from "@/components/operator/GuardianPanel";
 import { OraclePanel } from "@/components/operator/OraclePanel";
 import { TracePanel } from "@/components/operator/TracePanel";
+import { ScenarioAutoplay } from "@/components/ScenarioAutoplay";
 
 // 8× and 16× are for fast-forwarding a rehearsal; the demo narrative runs at 1–4×.
 const SPEEDS = [0.5, 1, 2, 4, 8, 16]
@@ -176,6 +177,21 @@ export default function OperatorPage() {
 
   return (
     <div className="min-h-screen bg-canvas">
+      {/* ambient background — same treatment as /live, so no console page is flat black */}
+      <div
+        aria-hidden
+        className="pointer-events-none fixed inset-0"
+        style={{
+          background:
+            "radial-gradient(1100px 480px at 72% -6%, rgba(255,255,255,0.05), transparent 60%)," +
+            "radial-gradient(900px 500px at 12% 104%, rgba(255,255,255,0.045), transparent 60%)," +
+            "radial-gradient(1400px 900px at 50% 50%, rgba(255,255,255,0.014), #000 85%)",
+        }}
+      />
+      {/* ?play=1 — the landing doors deep-link here with the scenario already running */}
+      <Suspense fallback={null}>
+        <ScenarioAutoplay connected={Boolean(snapshot)} />
+      </Suspense>
       <TopBar />
       <main className="mx-auto grid w-full max-w-[1560px] gap-3 px-3 py-3">
         {snapshot ? (

@@ -1298,3 +1298,575 @@ html.vq-land-menu-open {
   text-transform: uppercase;
   color: var(--muted);
 }
+
+/* ===========================================================================
+   The story — scroll sections below the hero.
+
+   The hero keeps its one-frame lock on `.vq-land-page`; this container is a
+   sibling that starts exactly one viewport down and scrolls normally. Its
+   background covers the fixed hero film so sections never fight the video.
+   =========================================================================== */
+
+.vq-land-below {
+  position: relative;
+  z-index: 1;
+  /* transparent at the very top blends over the fixed film, then solid black */
+  background:
+    linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.92) 160px, #000 320px),
+    radial-gradient(900px 420px at 82% 4%, rgba(255, 255, 255, 0.035), transparent 62%),
+    radial-gradient(760px 420px at 8% 38%, rgba(255, 255, 255, 0.028), transparent 60%),
+    #000;
+  font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  color: #fff;
+}
+
+.vq-land-below a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.vq-story-section {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 96px 40px;
+}
+
+.vq-story-kicker {
+  font-size: 11.5px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #7d7d7d;
+}
+
+.vq-story-h2 {
+  margin-top: 16px;
+  font-size: clamp(28px, 3.6vw, 44px);
+  font-weight: 500;
+  letter-spacing: -0.04em;
+  line-height: 1.1;
+  max-width: 24ch;
+}
+
+.vq-story-h2 em {
+  font-family: "Instrument Serif", "Times New Roman", Times, serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: 1.08em;
+  letter-spacing: -0.03em;
+  color: #9a9a9a;
+}
+
+.vq-story-lede {
+  margin-top: 18px;
+  max-width: 66ch;
+  color: #9a9a9a;
+  font-size: 15px;
+  line-height: 1.65;
+  letter-spacing: -0.012em;
+}
+
+.vq-story-cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 36px;
+}
+
+.vq-story-tag {
+  font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #7d7d7d;
+}
+
+.vq-story-tag-agent {
+  color: #d8d8d8;
+}
+
+/* --- pipeline flow --- */
+
+.vq-story-flow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-top: 34px;
+}
+
+.vq-story-flow-step {
+  display: inline-flex;
+  align-items: center;
+  height: 44px;
+  padding: 0 20px;
+  border-radius: 8px;
+  border: 1px solid rgba(198, 198, 198, 0.4);
+  background: linear-gradient(105deg, #050505 0%, #242424 48%, #3e3e3e 100%);
+  font-size: 14px;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+.vq-story-flow-step-key {
+  border-color: rgba(235, 235, 235, 0.9);
+  background: linear-gradient(180deg, #ffffff 0%, #e7e7e7 48%, #cfcfcf 100%);
+  color: #111;
+  font-weight: 600;
+  box-shadow: 0 0 22px rgba(186, 208, 255, 0.22);
+}
+
+.vq-story-flow-arr {
+  color: #5f5f5f;
+  font-size: 15px;
+}
+
+.vq-story-flow-note {
+  margin-top: 20px;
+  max-width: 72ch;
+  color: #9a9a9a;
+  font-size: 13.5px;
+  line-height: 1.65;
+}
+
+.vq-story-flow-note b {
+  color: #ededed;
+}
+
+.vq-story-duo {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 40px;
+}
+
+/* --- API matrix --- */
+
+.vq-story-matrix {
+  margin-top: 34px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.vq-story-matrix-row {
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr) 92px;
+  align-items: center;
+  gap: 18px;
+  padding: 15px 4px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.vq-story-matrix-row code {
+  font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  color: #ededed;
+}
+
+.vq-story-matrix-row span {
+  color: #9a9a9a;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.vq-story-mode {
+  justify-self: end;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 24px;
+  min-width: 74px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  color: #9a9a9a;
+}
+
+.vq-story-mode[data-mode="live"] {
+  background: #f4f6f9;
+  border-color: #f4f6f9;
+  color: #111;
+  font-weight: 600;
+}
+
+.vq-story-mode[data-mode="sandbox"] {
+  border-style: dashed;
+  color: #d8d8d8;
+}
+
+/* --- live evidence strip --- */
+
+.vq-story-live-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 34px;
+}
+
+.vq-story-live-tile {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  padding: 18px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.01));
+  min-width: 0;
+}
+
+.vq-story-live-label {
+  font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 9.5px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #7d7d7d;
+}
+
+.vq-story-live-value {
+  display: block;
+  margin-top: 10px;
+  font-size: 30px;
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+  color: #fff;
+}
+
+.vq-story-live-value[data-decision="HOLD"] {
+  color: #9a9a9a;
+}
+
+.vq-story-live-sub {
+  margin-top: 8px;
+  color: #757575;
+  font-size: 11.5px;
+  line-height: 1.5;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.vq-story-live-foot {
+  margin-top: 18px;
+  color: #5f5f5f;
+  font-size: 11.5px;
+  letter-spacing: 0.01em;
+}
+
+.vq-story-live-sleeping {
+  margin-top: 34px;
+  border: 1px dashed rgba(255, 255, 255, 0.18);
+  border-radius: 12px;
+  padding: 28px;
+  display: grid;
+  justify-items: start;
+  gap: 8px;
+}
+
+.vq-story-live-sleeping-title {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.vq-story-live-sleeping-body {
+  max-width: 64ch;
+  color: #9a9a9a;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.vq-story-live-sleeping .vq-land-btn {
+  margin-top: 10px;
+}
+
+/* --- doors --- */
+
+.vq-story-door {
+  display: block;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 14px;
+  padding: 26px 24px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.01));
+  transition: border-color 0.35s ease, box-shadow 0.35s ease, transform 0.35s ease;
+}
+
+.vq-story-door:hover {
+  border-color: rgba(235, 235, 235, 0.75);
+  box-shadow: 0 0 26px rgba(186, 208, 255, 0.16);
+  transform: translateY(-2px);
+}
+
+.vq-story-door h3 {
+  margin-top: 12px;
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: -0.03em;
+}
+
+.vq-story-door p {
+  margin-top: 10px;
+  color: #9a9a9a;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.vq-story-door-go {
+  display: inline-block;
+  margin-top: 16px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #ededed;
+}
+
+.vq-story-more {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 28px;
+}
+
+.vq-story-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 28px 40px 48px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  color: #5f5f5f;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* --- scroll reveal: only armed when JS runs, so no-JS never hides content --- */
+
+.vq-story-armed .vq-story-reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  transition:
+    opacity 0.7s ease var(--rd, 0s),
+    transform 0.7s cubic-bezier(0.16, 1, 0.3, 1) var(--rd, 0s);
+}
+
+.vq-story-armed .vq-story-reveal.vq-story-in {
+  opacity: 1;
+  transform: none;
+}
+
+/* ===========================================================================
+   The one-minute tour — spotlight overlay.
+   =========================================================================== */
+
+.vq-tour {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+}
+
+.vq-tour-hole {
+  position: fixed;
+  border-radius: 12px;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.82);
+  pointer-events: none;
+  transition: all 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.vq-tour-ring {
+  position: fixed;
+  border-radius: 12px;
+  border: 1.5px solid rgba(255, 255, 255, 0.85);
+  pointer-events: none;
+  transition: all 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: vqtour-ring-pulse 2.2s ease-in-out infinite;
+}
+
+@keyframes vqtour-ring-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.25); }
+  50% { box-shadow: 0 0 0 7px rgba(255, 255, 255, 0.06); }
+}
+
+.vq-tour-card {
+  position: fixed;
+  transform: translateX(-50%);
+  width: min(400px, calc(100vw - 32px));
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 14px;
+  background: linear-gradient(180deg, #0d0d0d, #060606);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  padding: 20px 22px 16px;
+  transition: top 0.45s cubic-bezier(0.16, 1, 0.3, 1), left 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.vq-tour-card-center {
+  left: 50% !important;
+  top: 50% !important;
+  transform: translate(-50%, -50%);
+}
+
+.vq-tour-count {
+  font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #7d7d7d;
+}
+
+.vq-tour-title {
+  margin-top: 10px;
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+}
+
+.vq-tour-body {
+  margin-top: 8px;
+  color: #9a9a9a;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.vq-tour-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 16px;
+}
+
+.vq-tour-skip {
+  border: 0;
+  background: none;
+  color: #7d7d7d;
+  font-size: 12.5px;
+  cursor: pointer;
+}
+
+.vq-tour-skip:hover {
+  color: #fff;
+}
+
+.vq-tour-nav {
+  display: flex;
+  gap: 8px;
+}
+
+.vq-tour-back,
+.vq-tour-next {
+  height: 34px;
+  padding: 0 16px;
+  border-radius: 6px;
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.vq-tour-back {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  color: #fff;
+}
+
+.vq-tour-back:hover {
+  border-color: rgba(255, 255, 255, 0.6);
+}
+
+.vq-tour-next {
+  background: linear-gradient(180deg, #ffffff 0%, #e7e7e7 48%, #cfcfcf 100%);
+  border: 1px solid #fff;
+  color: #111;
+}
+
+.vq-tour-next:hover {
+  box-shadow: 0 0 18px rgba(186, 208, 255, 0.35);
+}
+
+/* the quiet affordance that offers (or re-offers) the tour */
+
+.vq-tour-offer {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 90;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 38px;
+  padding: 0 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(198, 198, 198, 0.45);
+  background: linear-gradient(105deg, #050505 0%, #242424 48%, #3e3e3e 100%);
+  color: #f1f1f1;
+  font-size: 12.5px;
+  font-family: inherit;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.vq-tour-offer:hover {
+  border-color: rgba(235, 235, 235, 0.9);
+  box-shadow: 0 0 20px rgba(200, 210, 230, 0.2);
+}
+
+.vq-tour-offer-mark {
+  width: 14px;
+  height: 14px;
+  color: #fff;
+}
+
+/* --- story responsive --- */
+
+@media (max-width: 1100px) {
+  .vq-story-matrix-row {
+    grid-template-columns: 200px minmax(0, 1fr) 92px;
+  }
+}
+
+@media (max-width: 900px) {
+  .vq-story-section {
+    padding: 64px 20px;
+  }
+  .vq-story-cards,
+  .vq-story-duo,
+  .vq-story-live-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .vq-story-matrix-row {
+    grid-template-columns: minmax(0, 1fr) 84px;
+  }
+  .vq-story-matrix-row code {
+    grid-column: 1 / -1;
+  }
+  .vq-story-flow-step {
+    height: 38px;
+    padding: 0 14px;
+    font-size: 12.5px;
+  }
+  .vq-story-foot {
+    padding: 24px 20px 40px;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .vq-tour-offer {
+    right: 12px;
+    bottom: 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vq-story-armed .vq-story-reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  .vq-tour-hole,
+  .vq-tour-ring,
+  .vq-tour-card {
+    transition: none;
+    animation: none;
+  }
+}

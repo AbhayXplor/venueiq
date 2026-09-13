@@ -164,6 +164,18 @@ export default function VisitorPage() {
 
   return (
     <div className="min-h-screen bg-canvas">
+      {/* ambient background — softer than the console: the guest's page carries more atmosphere */}
+      <div
+        aria-hidden
+        className="pointer-events-none fixed inset-0"
+        style={{
+          background:
+            "radial-gradient(1000px 520px at 50% -8%, rgba(255,255,255,0.06), transparent 62%)," +
+            "radial-gradient(820px 480px at 14% 106%, rgba(255,255,255,0.05), transparent 60%)," +
+            "radial-gradient(760px 460px at 88% 78%, rgba(255,255,255,0.035), transparent 62%)," +
+            "radial-gradient(1400px 900px at 50% 50%, rgba(255,255,255,0.016), #000 85%)",
+        }}
+      />
       {/* minimal page chrome above the phone */}
       <div className="mx-auto flex w-full max-w-[1560px] flex-wrap items-center justify-between gap-2 px-4 py-3">
         <Link href="/" className="vq-glass-pill">
