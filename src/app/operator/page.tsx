@@ -11,6 +11,7 @@
  * so the console reads as the same product.
  */
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { ArrowLeft, Pause, Play, RotateCcw, Signal } from "lucide-react";
 import { Mark } from "@/components/landing/SiteHeader";
 import { sendControl, useEngine, useEngineStore } from "@/lib/engine-client";
@@ -23,11 +24,23 @@ import { TracePanel } from "@/components/operator/TracePanel";
 // 8× and 16× are for fast-forwarding a rehearsal; the demo narrative runs at 1–4×.
 const SPEEDS = [0.5, 1, 2, 4, 8, 16]
 
-//
-// Whether this build talks to a hosted engine. Nobody running locally needs to
-// hear about cold starts, and nobody visiting a deployment needs to be told to
-// start a Bun process — so the waiting state says which one it is.
-const HOSTED = Boolean(process.env.NEXT_PUBLIC_ENGINE_URL)
+/**
+ * Whether the person reading this is on a deployment rather than a dev server.
+ *
+ * The waiting copy differs by audience: a deployment should be told the engine
+ * is waking, a laptop should be told which process to start. Decided from the
+ * hostname at runtime, not from a build flag, so a deployment that has not had
+ * `NEXT_PUBLIC_ENGINE_URL` set yet still gets the useful message instead of Bun
+ * commands it cannot run. An explicit engine URL counts as hosted too, which
+ * covers running the app locally against a deployed engine.
+ */
+function useIsDeployment(): boolean {
+  const [deployed, setDeployed] = useState(Boolean(process.env.NEXT_PUBLIC_ENGINE_URL))
+  useEffect(() => {
+    setDeployed((was) => was || !/^(localhost|127\.0\.0\.1|\[::1\])$/.test(window.location.hostname))
+  }, [])
+  return deployed
+}
 
 function TopBar() {
   const snap = useEngineStore((s) => s.snapshot)
@@ -158,6 +171,7 @@ function KpiStrip() {
 
 export default function OperatorPage() {
   useEngine()
+  const deployed = useIsDeployment()
   const snapshot = useEngineStore((s) => s.snapshot)
 
   return (
@@ -189,11 +203,11 @@ export default function OperatorPage() {
                 Waiting for the <span className="vq-serif text-[17px] text-dim">engine</span>
               </p>
               <p className="mt-2 text-[12px] leading-relaxed text-mute">
-                {HOSTED
+                {deployed
                   ? "The console streams venue state, Nokia NaC signals and agent decisions over one socket. On free hosting the engine spins down while idle, so the first visit can take up to a minute — this page keeps trying by itself."
                   : "The console streams venue state, Nokia NaC signals and agent decisions over one socket. Start the brain and the engine, then reload."}
               </p>
-              {HOSTED ? (
+              {deployed ? (
                 <p className="mt-5 inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.18em] text-dim">
                   <span className="h-1.5 w-1.5 rounded-full bg-live vq-pulse" />
                   waking the engine
