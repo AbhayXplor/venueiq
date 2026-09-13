@@ -82,10 +82,44 @@ function markDone() {
   }
 }
 
+const GAP = 18;
+const MARGIN = 16;
+
+/**
+ * Position the tour card: flip sides when there is no room on the preferred
+ * side, then clamp hard inside the viewport. This is the fix for the card
+ * walking off-screen on the last step — placement is a guarantee, not a hope.
+ */
+function placeCard(
+  side: "top" | "bottom",
+  box: { x: number; y: number; w: number; h: number },
+  cardH: number,
+  cardW: number,
+): { top: number; left: number } {
+  const vh = typeof window === "undefined" ? 900 : window.innerHeight;
+  const vw = typeof window === "undefined" ? 1440 : window.innerWidth;
+  const cx = box.x + box.w / 2;
+  const useSide: "top" | "bottom" =
+    side === "top" && box.y - GAP - cardH < MARGIN
+      ? "bottom"
+      : side === "bottom" && box.y + box.h + GAP + cardH > vh - MARGIN
+        ? "top"
+        : side;
+  const top =
+    useSide === "top"
+      ? Math.max(MARGIN, box.y - GAP - cardH)
+      : Math.min(box.y + box.h + GAP, vh - MARGIN - cardH);
+  const half = Math.min(cardW, vw - MARGIN * 2) / 2;
+  const left = Math.min(Math.max(cx, MARGIN + half), vw - MARGIN - half);
+  return { top, left };
+}
+
 export function LandingTour() {
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(0);
   const [box, setBox] = useState<{ x: number; y: number; w: number; h: number } | null>(null);
+  const [cardSize, setCardSize] = useState({ w: 400, h: 0 });
+  const cardRef = useRef<HTMLDivElement>(null);
   const rafRef = useRef(0);
   const params = useSearchParams();
 
@@ -101,9 +135,21 @@ export function LandingTour() {
     setOpen(true);
   }, []);
 
-  // Opt-in, Tollgate-style: the floating pill starts it, or `?tour=1` deep-links
-  // straight into it for a rehearsed demo. It never auto-opens — a judge who
-  // wants the console should never have to dismiss an overlay first.
+  // Offer the tour on first visit: a warm "start here" hint pops beside the
+  // pill a moment after load, so the tour is discoverable without hunting for
+  // it — but the page itself is never blocked by an overlay.
+  const [hintVisible, setHintVisible] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => {
+      if (!readDone()) setHintVisible(true);
+    }, 1800);
+    return () => clearTimeout(t);
+  }, []);
+
+  // Opt-in, Tollgate-style: the floating pill (or the hint) starts it, or
+  // `?tour=1` deep-links straight into it for a rehearsed demo. It never
+  // auto-opens — a judge who wants the console should never have to dismiss
+  // an overlay first.
   useEffect(() => {
     if (params?.get("tour") === "1") {
       const t = setTimeout(() => setOpen(true), 900);
@@ -146,20 +192,47 @@ export function LandingTour() {
     document.querySelector(current.sel)?.scrollIntoView({ block: "center", behavior: "smooth" });
   }, [open, step, current]);
 
-  // Escape closes.
+  // Escape closes. Card height is measured so the flip/clamp maths can use it.
   useEffect(() => {
-    if (!open) return;
+    if (!open) {
+      setHintVisible(false);
+      return;
+    }
+    const measure = () => setCardSize({ w: cardRef.current?.offsetWidth ?? 400, h: cardRef.current?.offsetHeight ?? 0 });
+    measure();
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") close();
       if (e.key === "ArrowRight" || e.key === "Enter") setStep((s) => Math.min(s + 1, STEPS.length - 1));
       if (e.key === "ArrowLeft") setStep((s) => Math.max(s - 1, 0));
     };
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    window.addEventListener("resize", measure);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("resize", measure);
+    };
   }, [open, close]);
 
   return (
     <>
+      {/* the first-load pointer */}
+      {hintVisible && !open && (
+        <button
+          type="button"
+          className="vq-tour-hint"
+          onClick={() => {
+            setHintVisible(false);
+            start();
+          }}
+        >
+          <svg className="vq-tour-hint-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M12 5v14" />
+            <path d="m19 12-7 7-7-7" />
+          </svg>
+          Start here — take the tour
+        </button>
+      )}
+
       {/* the affordance — a quiet pill under the header actions once dismissed */}
       {!open && (
         <button type="button" className="vq-tour-offer" onClick={start}>
@@ -174,14 +247,12 @@ export function LandingTour() {
           {box && <div className="vq-tour-ring" style={{ left: box.x, top: box.y, width: box.w, height: box.h }} />}
           {current && (
             <div
-              className={`vq-tour-card${box ? ` vq-tour-card-${current.side}` : " vq-tour-card-center"}`}
+              ref={cardRef}
+              className="vq-tour-card"
               style={
                 box
-                  ? {
-                      left: box.x + box.w / 2,
-                      top: current.side === "top" ? box.y - 18 : box.y + box.h + 18,
-                    }
-                  : undefined
+                  ? placeCard(current.side, box, cardSize.h, cardSize.w)
+                  : { left: "50%", top: "50%", transform: "translate(-50%, -50%)" }
               }
             >
               <p className="vq-tour-count">
