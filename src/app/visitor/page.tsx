@@ -164,16 +164,16 @@ export default function VisitorPage() {
 
   return (
     <div className="min-h-screen bg-canvas">
-      {/* ambient background — softer than the console: the guest's page carries more atmosphere */}
+      {/* ambient background — warmer than the console: the guest's page carries more atmosphere */}
       <div
         aria-hidden
-        className="pointer-events-none fixed inset-0"
+        className="vq-ambient"
         style={{
           background:
-            "radial-gradient(1000px 520px at 50% -8%, rgba(255,255,255,0.06), transparent 62%)," +
-            "radial-gradient(820px 480px at 14% 106%, rgba(255,255,255,0.05), transparent 60%)," +
-            "radial-gradient(760px 460px at 88% 78%, rgba(255,255,255,0.035), transparent 62%)," +
-            "radial-gradient(1400px 900px at 50% 50%, rgba(255,255,255,0.016), #000 85%)",
+            "radial-gradient(1000px 520px at 50% -8%, rgba(255, 138, 52, 0.22), transparent 62%)," +
+            "radial-gradient(820px 480px at 14% 106%, rgba(255, 116, 44, 0.14), transparent 60%)," +
+            "radial-gradient(760px 460px at 88% 78%, rgba(255, 150, 64, 0.1), transparent 62%)," +
+            "radial-gradient(780px 470px at 28% 12%, rgba(96, 124, 208, 0.06), transparent 64%)",
         }}
       />
       {/* minimal page chrome above the phone */}

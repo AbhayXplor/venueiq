@@ -124,17 +124,8 @@ export default function LiveScreenPage() {
 
   return (
     <div className="min-h-screen bg-canvas text-body">
-      {/* ambient background: venue glow low on the horizon + a faint signal field */}
-      <div
-        aria-hidden
-        className="pointer-events-none fixed inset-0"
-        style={{
-          background:
-            "radial-gradient(1100px 480px at 72% -6%, rgba(255,255,255,0.05), transparent 60%)," +
-            "radial-gradient(900px 500px at 12% 104%, rgba(255,255,255,0.045), transparent 60%)," +
-            "radial-gradient(1400px 900px at 50% 50%, rgba(255,255,255,0.014), #000 85%)",
-        }}
-      />
+      {/* ambient background — the warm room, shared with the console and visitor view */}
+      <div aria-hidden className="vq-ambient" />
 
       {/* nav */}
       <header className="relative z-10 mx-auto flex max-w-6xl items-center justify-between px-6 py-5">

@@ -84,8 +84,8 @@
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(70% 55% at 50% 88%, #12161c 0%, transparent 70%),
-    radial-gradient(120% 90% at 50% 40%, #0a0d12 0%, #040507 74%);
+    radial-gradient(70% 55% at 50% 88%, #17100a 0%, transparent 70%),
+    radial-gradient(120% 90% at 50% 40%, #120c07 0%, #050302 74%);
 }
 
 /* ---------- page frame ---------------------------------------------------- */

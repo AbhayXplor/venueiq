@@ -31,20 +31,24 @@
   /* ---- surface scale ----------------------------------------------------
      Five real levels: three above the canvas so things can be *in front of*
      each other, one below so wells can be *behind* it. Monotonic by lightness,
-     so the ink-* names stay interchangeable with the semantic ones. */
-  --color-ink-950: #040507; /* well — recessed floor, troughs, code wells */
-  --color-ink-900: #08090c; /* canvas — the app page background */
-  --color-ink-850: #0f1319; /* panel — a card sitting on the canvas */
-  --color-ink-800: #171c23; /* raised — contents of a panel: zone cards, rows */
-  --color-ink-700: #1f252e; /* hover — highest level, interactive surfaces */
+     so the ink-* names stay interchangeable with the semantic ones.
+     The scale is warm: the same sodium-brown family as the landing story and
+     the Dubai hero film, so no surface in the product reads as cold blue-black
+     against the marketing page. Status hues below are unchanged — the ramp
+     carries data, the canvas carries atmosphere. */
+  --color-ink-950: #050302; /* well — recessed floor, troughs, code wells */
+  --color-ink-900: #0b0805; /* canvas — the app page background */
+  --color-ink-850: #141009; /* panel — a card sitting on the canvas */
+  --color-ink-800: #1d1710; /* raised — contents of a panel: zone cards, rows */
+  --color-ink-700: #262017; /* hover — highest level, interactive surfaces */
 
   /* Semantic aliases for the same five levels, so intent is readable at the
      call site: `bg-panel` says why, `bg-ink-850` says what. */
-  --color-canvas: #08090c;
-  --color-panel: #0f1319;
-  --color-raised: #171c23;
-  --color-hover: #1f252e;
-  --color-well: #040507;
+  --color-canvas: #0b0805;
+  --color-panel: #141009;
+  --color-raised: #1d1710;
+  --color-hover: #262017;
+  --color-well: #050302;
 
   /* The accent is white. Glass, not paint. */
   --color-acc: #ffffff;
@@ -105,6 +109,57 @@ body {
 
 ::selection {
   background: rgba(255, 255, 255, 0.22);
+}
+
+/* ---------- shared ambient ---------- */
+
+/* The warm room: the same sodium glow stack as the landing story, one class
+   so every app surface sits in the same evening light. The visitor page may
+   layer a stronger version of its own on top. */
+.vq-ambient {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(1150px 600px at 82% 0%, rgba(255, 132, 40, 0.2), transparent 64%),
+    radial-gradient(950px 640px at 0% 34%, rgba(255, 110, 40, 0.11), transparent 60%),
+    radial-gradient(1300px 720px at 58% 104%, rgba(255, 150, 64, 0.09), transparent 66%),
+    radial-gradient(780px 470px at 28% 12%, rgba(96, 124, 208, 0.06), transparent 64%);
+}
+
+/* The ops room stays BLACK — it is text- and button-dense, and glow behind
+   dense data reads as noise. Instead of colour it gets a texture: faint
+   concentric ripples rising from below the fold, like pressure spreading
+   through a crowd. Barely-there, but the surface never reads as empty. */
+.vq-ambient-ops {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    repeating-radial-gradient(
+      150% 110% at 50% 122%,
+      rgba(255, 255, 255, 0.032) 0 1px,
+      transparent 1px 58px
+    ),
+    #000;
+}
+
+/* The console's surfaces go back to true black too: the warm panel scale that
+   /live and /visitor wear well reads as an orange cast under this much dense
+   UI. Scoped to the operator root only — Tailwind v4 utilities reference
+   these variables, so overriding them here re-themes the whole console
+   subtree without touching the other pages. */
+.vq-ops-root {
+  --color-ink-950: #020202;
+  --color-ink-900: #060607;
+  --color-ink-850: #0b0b0d;
+  --color-ink-800: #111114;
+  --color-ink-700: #17171b;
+  --color-canvas: #060607;
+  --color-panel: #0b0b0d;
+  --color-raised: #111114;
+  --color-hover: #17171b;
+  --color-well: #020202;
 }
 
 /* ---------- shared chrome ---------- */

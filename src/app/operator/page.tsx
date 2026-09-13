@@ -176,24 +176,18 @@ export default function OperatorPage() {
   const snapshot = useEngineStore((s) => s.snapshot)
 
   return (
-    <div className="min-h-screen bg-canvas">
-      {/* ambient background — same treatment as /live, so no console page is flat black */}
-      <div
-        aria-hidden
-        className="pointer-events-none fixed inset-0"
-        style={{
-          background:
-            "radial-gradient(1100px 480px at 72% -6%, rgba(255,255,255,0.05), transparent 60%)," +
-            "radial-gradient(900px 500px at 12% 104%, rgba(255,255,255,0.045), transparent 60%)," +
-            "radial-gradient(1400px 900px at 50% 50%, rgba(255,255,255,0.014), #000 85%)",
-        }}
-      />
+    <div className="vq-ops-root min-h-screen bg-canvas">
+      {/* ambient background — black with a faint ripple pattern; dense data
+          pages read better on a quiet, dark surface than on glow */}
+      <div aria-hidden className="vq-ambient-ops" />
       {/* ?play=1 — the landing doors deep-link here with the scenario already running */}
       <Suspense fallback={null}>
         <ScenarioAutoplay connected={Boolean(snapshot)} />
       </Suspense>
       <TopBar />
-      <main className="mx-auto grid w-full max-w-[1560px] gap-3 px-3 py-3">
+      {/* relative z-lift: the fixed ambient layers paint above static content,
+          so the console content must be positioned above it — same contract as /live */}
+      <main className="relative z-10 mx-auto grid w-full max-w-[1560px] gap-3 px-3 py-3">
         {snapshot ? (
           <>
             <KpiStrip />
