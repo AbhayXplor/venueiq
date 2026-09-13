@@ -3,8 +3,10 @@
 # This one does NOT belong on Vercel: it holds a live socket and a tick loop, so
 # it needs a host that keeps a process running (Railway, Render, Fly, a VPS).
 #
-# Deploy it with the repo root as context and this directory as the Dockerfile
-# path, or set the service's root directory to `mini-services/venue-engine`.
+# IMPORTANT — the build context must be THIS directory, `mini-services/venue-engine`,
+# not the repo root. The COPY paths below are relative to the context, so building
+# from the repo root fails with "package.json not found". Render and Railway call
+# this the service's Root Directory; Northflank calls it the build context.
 #
 # The port is bound from $PORT, which the platform injects. See src/config.ts.
 FROM oven/bun:1-alpine

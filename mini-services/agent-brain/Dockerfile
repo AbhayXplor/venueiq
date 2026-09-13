@@ -5,8 +5,10 @@
 # app/config.py — a container that binds 127.0.0.1 comes up healthy and cannot
 # be called, which is the failure this image is written to avoid.
 #
-# Deploy with the repo root as context and this directory as the Dockerfile path,
-# or set the service's root directory to `mini-services/agent-brain`.
+# IMPORTANT — the build context must be THIS directory, `mini-services/agent-brain`,
+# not the repo root. The COPY paths below are relative to the context, so building
+# from the repo root fails with "requirements.txt not found". Render and Railway call
+# this the service's Root Directory; Northflank calls it the build context.
 FROM python:3.12-slim
 
 WORKDIR /app

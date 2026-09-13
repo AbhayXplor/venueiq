@@ -141,8 +141,15 @@ long-lived process to put those in.
 | `mini-services/agent-brain` | **Railway / Render / Fly** | a long-lived HTTP service |
 
 Nothing is hardcoded to a local address, and every service takes its port from `$PORT` when
-the platform supplies one — so there is no port to configure. Each service also has a
-`Dockerfile`, so the host can build it with no build settings of its own.
+the platform supplies one — so there is no port to configure. The code prefers `$PORT` and
+falls back to `3003` / `3004` (the ports its `Dockerfile` exposes), so it comes up correctly
+whether or not the platform injects one.
+
+One build setting does matter: **the build context must be the service directory**, not the
+repo root. The `Dockerfile` `COPY` paths are relative to it, so a repo-root build fails with
+`package.json not found`. Render and Railway call this the Root Directory; Northflank calls it
+the build context. If a platform will only build from the repo root, prefix the `COPY` paths
+in that Dockerfile with `mini-services/<service>/`.
 
 ### 1 — the engine and the brain
 
