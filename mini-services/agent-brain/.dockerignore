@@ -1,0 +1,11 @@
+# Never bake secrets or local state into an image — the platform supplies
+# configuration as environment variables at run time.
+.env
+.env.*
+.venv
+venv
+__pycache__
+*.py[cod]
+tests
+Dockerfile
+.dockerignore
